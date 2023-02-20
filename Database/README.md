@@ -21,3 +21,10 @@ INSERT INTO Bar("name", "address")
 VALUES ('<the name of the bar>', '<physical address of the bar>');
 ```
 
+After that you can start adding drinks from the restaurants menu witht the following commands:
+
+```
+INSERT INTO Drink("bar_name", "drink_name", "price") 
+VALUES ('<the name of the bar>', '<name of the drink>', <the price of the drink>);
+```
+
