@@ -12,4 +12,12 @@ ctx.push()
 db.create_all()
 ctx.pop()
 ```
-The database was managed and populated using the SQLite DB Browser https://sqlitebrowser.org/
+The database was managed and populated using the SQLite DB Browser https://sqlitebrowser.org/ Version 3.12.2
+
+In the "Execute SQL" tab, use the following commands to first create the bar item:
+
+```
+INSERT INTO Bar("name", "address") 
+VALUES ('<the name of the bar>', '<physical address of the bar>');
+```
+
