@@ -12,3 +12,4 @@ ctx.push()
 db.create_all()
 ctx.pop()
 ```
+The database was managed and populated using the SQLite DB Browser https://sqlitebrowser.org/
