@@ -65,12 +65,15 @@ class Tapdrink(db.Model):
 
     def serialize(self):
         return {
-            "name": self.name,
-            "model": self.model,
-            "location": self.location
+            "bar_name ": self.bar_name,
+            "drink type": self.drink_type,
+            "drink name": self.drink_name,
+            "drink size": self.drink_size,
+            "price": self.price
         }
 
     def deserialize(self, doc):
+        self.bar_name = doc["bar_name"]
         self.drink_type = doc["drink_type"]
         self.drink_name = doc["drink_name"]
         self.drink_size = doc["drink_size"]
@@ -80,9 +83,13 @@ class Tapdrink(db.Model):
     def json_schema():
         schema = {
             "type": "object",
-            "required": ["drink_type", "drink_name", "drink_size", "price"]
+            "required": ["bar_name", "drink_type", "drink_name", "drink_size", "price"]
         }
         props = schema["properties"] = {}
+        props["bar_name"] = {
+            "description": "The name of the bar",
+            "type": "string",
+        }
         props["drink_type"] = {
             "description": "The type of drink (Beer, Long Drink etc.)",
             "type": "string",
@@ -104,7 +111,7 @@ class Tapdrink(db.Model):
 class Cocktail(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     bar_name = db.Column(db.String(64), db.ForeignKey("bar.name",ondelete="CASCADE"))
-    cocktail_name = db.Column(db.String(64), unique=False, nullable=Falll()e)
+    cocktail_name = db.Column(db.String(64), unique=False, nullable=False)
     price = db.Column(db.Float, nullable=False)
     table_args_= (UniqueConstraint('bar_name', 'cocktail_name', name='No duplicates in a bar'),
                      )
@@ -112,21 +119,27 @@ class Cocktail(db.Model):
 
     def serialize(self):
         return {
-            "name": self.cocktail_name,
+            "bar_name ": self.bar_name,
+            "cocktail_name ": self.cocktail_name,
             "price": self.price    
         }
     
     def deserialize(self, doc):
-        self.name = doc["cocktail_name"]
+        self.bar_name = doc["bar_name"]
+        self.cocktail_name = doc["cocktail_name"]
         self.address = doc["price"]
 
     @staticmethod
     def json_schema():
         schema = {
             "type": "object",
-            "required": ["cocktail_name", "price"]
+            "required": ["bar_name","cocktail_name", "price"]
         }
         props = schema["properties"] = {}
+        props["bar_name"] = {
+            "description": "The name of the bar",
+            "type": "string",
+        }
         props["name"] = {
             "description": "The name of the cocktail",
             "type": "string",
@@ -144,12 +157,13 @@ class BarCollection(Resource):
         body = {
             "bars": []
         }
-        ars = BarItem.query.all()
+        bars = Bar.query.all()
         
         for bar in bars:
             body["bars"].append(
                 {
                     "name": bar.name
+                    "address": bar.address
                 }
             )
 
@@ -227,7 +241,8 @@ class TapdrinkCollection(Resource):
         
         for tapdrink in tapdrinks:
             body["tapdrinks"].append(
-                {
+                {   
+                    "bar_name": tapdrink.bar_name,
                     "drink_type": tapdrink.drink_type,
                     "drink_name": tapdrink.drink_name,
                     "drink_size": tapdrink.drink_size,
@@ -253,17 +268,17 @@ class TapdrinkCollection(Resource):
             db.session.add(tapdrink)
             db.session.commit()
 
-        header = {'Location': api.url_for(TapdrinkItem, bar=bar, drink_name=drink_name, drink_size=drink_size)}
+        header = {'Location': api.url_for(TapdrinkItem, tapdrink=tapdrink)}
         return Response(status=201, headers=header)
 
 class TapdrinkItem(Resource):
 
-    def get(self, drink_name, drink_size):
-        tapdrink = Tapdrink.query.filter_by(drink_name=drink_name, drink_size=drink_size).first()
+    def get(self, bar, drinkname, drinksize):
+        tapdrink = Tapdrink.query.filter_by(bar_name=bar, drink_name=drinkname, drink_size=drinksize).first()
         body = tapdrink.serialize()
         return Response(json.dumps(body), 200, mimetype=JSON)
 
-    def put(self, drink_name, drink_size):
+    def put(self, bar, drinkname, drinksize):
         if not request.json:
             raise UnsupportedMediaType
         
@@ -272,7 +287,7 @@ class TapdrinkItem(Resource):
         except ValidationError as e:
             raise BadRequest(description=str(e))
         
-        tapdrink = Tapdrink.query.filter_by(drink_name=drink_name, drink_size=drink_size).first()
+        tapdrink = Tapdrink.query.filter_by(bar_name=bar, drink_name=drinkname, drink_size=drinksize).first()
         tapdrink.deserialize(request.json)
                 
         try:
@@ -286,7 +301,8 @@ class TapdrinkItem(Resource):
 
         return Response(status=204)
         
-    def delete(self, tapdrink):
+    def delete(self, bar, drinkname, drinksize):
+        tapdrink = Tapdrink.query.filter_by(bar_name=bar, drink_name=drinkname, drink_size=drinksize).first()
         db.session.delete(tapdrink)
         db.session.commit()
         return Response(status=204)
@@ -307,6 +323,7 @@ class CocktailCollection(Resource):
         for cocktail in cocktails:
             body["cocktails"].append(
                 {
+                    "bar_name": cocktail.bar_name
                     "cocktail_name": cocktail.cocktail_name,
                     "price": cocktail.price
                 }
@@ -361,9 +378,13 @@ class CocktailItem(Resource):
             )
 
         return Response(status=204)
+    
+    def delete(self, cocktail):
+        db.session.delete(cocktail)
+        db.session.commit()
+        return Response(status=204)
 
 class BarConverter(BaseConverter):
-    
     def to_python(self, name):
         db_bar = Bar.query.filter_by(name=name).first()
         if db_bar is None:
@@ -376,7 +397,7 @@ class BarConverter(BaseConverter):
 class CocktailConverter(BaseConverter):
     
     def to_python(self, name):
-        db_cocktail = Bar.query.filter_by(cocktail_name=name).first()
+        db_cocktail = Cocktail.query.filter_by(cocktail_name=name).first()
         if db_cocktail is None:
             raise NotFound
         return db_cocktail
