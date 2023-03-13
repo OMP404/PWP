@@ -1,13 +1,20 @@
-from sqlalchemy.orm import sessionmaker
-from flask import Flask
+import json
+from flask import Flask, Response, request
 from flask_sqlalchemy import SQLAlchemy
+from flask_restful import Resource, Api
+from jsonschema import validate, ValidationError
 from sqlalchemy.engine import Engine
 from sqlalchemy import event, UniqueConstraint
-from flask_restful import Resource
+from sqlalchemy.exc import IntegrityError, OperationalError
+from werkzeug.exceptions import UnsupportedMediaType, NotFound, Conflict, BadRequest
+from werkzeug.routing import BaseConverter
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bar.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+
+api = Api(app)
 db = SQLAlchemy(app)
 
 @event.listens_for(Engine, "connect")
@@ -162,7 +169,7 @@ class BarCollection(Resource):
         for bar in bars:
             body["bars"].append(
                 {
-                    "name": bar.name
+                    "name": bar.name,
                     "address": bar.address
                 }
             )
@@ -267,6 +274,11 @@ class TapdrinkCollection(Resource):
         try:
             db.session.add(tapdrink)
             db.session.commit()
+        except IntegrityError:
+            raise Conflict(
+                409,
+                description="Tapdrink with the same name and size already exists."
+            )
 
         header = {'Location': api.url_for(TapdrinkItem, tapdrink=tapdrink)}
         return Response(status=201, headers=header)
@@ -323,7 +335,7 @@ class CocktailCollection(Resource):
         for cocktail in cocktails:
             body["cocktails"].append(
                 {
-                    "bar_name": cocktail.bar_name
+                    "bar_name": cocktail.bar_name,
                     "cocktail_name": cocktail.cocktail_name,
                     "price": cocktail.price
                 }
@@ -346,6 +358,11 @@ class CocktailCollection(Resource):
         try:
             db.session.add(cocktail)
             db.session.commit()
+        except IntegrityError:
+            raise Conflict(
+                409,
+                description="Tapdrink with the same name and size already exists."
+            )
 
         header = {'Location': api.url_for(CocktailItem, cocktail=cocktail)}
         return Response(status=201, headers=header)
@@ -406,10 +423,9 @@ class CocktailConverter(BaseConverter):
         return db_cocktail.cocktail_name
     
 app.url_map.converters["bar"] = BarConverter
-app.url_map.converters["drinkname"] = DrinkNameConverter
 app.url_map.converters["cocktail"] = CocktailConverter
 
-api.add_resource(BarCollection "/api/bars/")
+api.add_resource(BarCollection, "/api/bars/")
 api.add_resource(BarItem, "/api/bars/<bar:bar>/")
 api.add_resource(TapdrinkCollection, "/api/bars/<bar:bar>/tapdrinks")
 api.add_resource(TapdrinkItem, "/api/bars/<bar:bar>/tapdrinks/<string:drinkname>/<float:drinksize>")
