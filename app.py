@@ -107,11 +107,13 @@ class Tapdrink(db.Model):
         }
         props["drink_size"] = {
             "description": "The size of the drink in liters",
-            "type": "number"
+            "type": "number",
+            "minimum": 0
         }
         props["price"] = {
             "description": "The price of the drink in euros",
-            "type": "number"
+            "type": "number",
+            "minimum": 0
         }
         return schema
 
@@ -153,7 +155,8 @@ class Cocktail(db.Model):
         }
         props["price"] = {
             "description": "The price of the cocktail",
-            "type": "number"
+            "type": "number",
+            "minimum": 0
         }
         
         return schema
