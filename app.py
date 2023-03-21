@@ -197,8 +197,7 @@ class BarCollection(Resource):
                 description="Bar with the same name already exists."
             )
 
-        header = {'Location': api.url_for(BarItem, bar=bar)}
-        return Response(status=201, headers=header)
+        return Response(status=201, headers={'Location': api.url_for(BarItem, bar=bar)})
 
 class BarItem(Resource):
 
@@ -280,8 +279,7 @@ class TapdrinkCollection(Resource):
                 description="Tapdrink with the same name and size already exists."
             )
 
-        header = {'Location': api.url_for(TapdrinkItem, tapdrink=tapdrink)}
-        return Response(status=201, headers=header)
+        return Response(status=201, headers={'Location': api.url_for(TapdrinkItem, tapdrink=tapdrink)})
 
 class TapdrinkItem(Resource):
 
@@ -364,17 +362,17 @@ class CocktailCollection(Resource):
                 description="Tapdrink with the same name and size already exists."
             )
 
-        header = {'Location': api.url_for(CocktailItem, cocktail=cocktail)}
-        return Response(status=201, headers=header)
+        return Response(status=201, headers={'Location': api.url_for(CocktailItem, cocktail=cocktail)})
 
 
 class CocktailItem(Resource):
 
-    def get(self, coctail):
+    def get(self, bar, cocktailname):
+        cocktail = Cocktail.query.filter_by(bar_name=bar, cocktail_name=cocktailname).first()
         body = cocktail.serialize()
         return Response(json.dumps(body), 200, mimetype=JSON)
 
-    def put(self, cocktail):
+    def put(self, bar, cocktailname):
         if not request.json:
             raise UnsupportedMediaType
         
@@ -383,6 +381,7 @@ class CocktailItem(Resource):
         except ValidationError as e:
             raise BadRequest(description=str(e))
         
+        cocktail = Cocktail.query.filter_by(bar_name=bar, cocktail_name=cocktailname).first()
         cocktail.deserialize(request.json)
                 
         try:
@@ -396,7 +395,8 @@ class CocktailItem(Resource):
 
         return Response(status=204)
     
-    def delete(self, cocktail):
+    def delete(self, bar, cocktailname):
+        cocktail = Cocktail.query.filter_by(bar_name=bar, cocktail_name=cocktailname).first()
         db.session.delete(cocktail)
         db.session.commit()
         return Response(status=204)
@@ -411,23 +411,11 @@ class BarConverter(BaseConverter):
     def to_url(self, db_bar):
         return db_bar.name
 
-class CocktailConverter(BaseConverter):
-    
-    def to_python(self, name):
-        db_cocktail = Cocktail.query.filter_by(cocktail_name=name).first()
-        if db_cocktail is None:
-            raise NotFound
-        return db_cocktail
-        
-    def to_url(self, db_cocktail):
-        return db_cocktail.cocktail_name
-    
 app.url_map.converters["bar"] = BarConverter
-app.url_map.converters["cocktail"] = CocktailConverter
 
 api.add_resource(BarCollection, "/api/bars/")
 api.add_resource(BarItem, "/api/bars/<bar:bar>/")
 api.add_resource(TapdrinkCollection, "/api/bars/<bar:bar>/tapdrinks")
-api.add_resource(TapdrinkItem, "/api/bars/<bar:bar>/tapdrinks/<string:drinkname>/<float:drinksize>")
+api.add_resource(TapdrinkItem, "/api/bars/<bar:bar>/tapdrinks/<drinkname>/<drinksize>")
 api.add_resource(CocktailCollection, "/api/bars/<bar:bar>/cocktails")
-api.add_resource(CocktailItem, "/api/bars/<bar:bar>/cocktails/<cocktail:cocktail>/")
+api.add_resource(CocktailItem, "/api/bars/<bar:bar>/cocktails/<cocktailname>/")
