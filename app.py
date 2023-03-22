@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bar.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-
+JSON = "application/json"
 api = Api(app)
 db = SQLAlchemy(app)
 
@@ -81,7 +81,7 @@ class Tapdrink(db.Model):
 
     def deserialize(self, doc):
         self.bar_name = doc["bar_name"]
-        self.drink_type = doc["drink_type"]
+        self.drink_type = doc.get("drink_type")
         self.drink_name = doc["drink_name"]
         self.drink_size = doc["drink_size"]
         self.price = doc["price"]
@@ -90,15 +90,11 @@ class Tapdrink(db.Model):
     def json_schema():
         schema = {
             "type": "object",
-            "required": ["bar_name", "drink_type", "drink_name", "drink_size", "price"]
+            "required": ["bar_name",  "drink_name", "drink_size", "price"]
         }
         props = schema["properties"] = {}
         props["bar_name"] = {
             "description": "The name of the bar",
-            "type": "string",
-        }
-        props["drink_type"] = {
-            "description": "The type of drink (Beer, Long Drink etc.)",
             "type": "string",
         }
         props["drink_name"] = {
