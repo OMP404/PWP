@@ -277,8 +277,8 @@ class TapdrinkCollection(Resource):
                 409,
                 description="Tapdrink with the same name and size already exists."
             )
-
-        return Response(status=201, headers={'Location': api.url_for(TapdrinkItem, tapdrink=tapdrink)})
+        header = {'Location': api.url_for(TapdrinkItem, bar_name=tapdrink.bar_name, drink_name=tapdrink.drink_name, drink_size=tapdrink.drink_size)}
+        return Response(status=201, headers=header)
 
 class TapdrinkItem(Resource):
 
@@ -360,8 +360,8 @@ class CocktailCollection(Resource):
                 409,
                 description="Tapdrink with the same name and size already exists."
             )
-
-        return Response(status=201, headers={'Location': api.url_for(CocktailItem, cocktail=cocktail)})
+        header = {'Location': api.url_for(CocktailItem, bar_name=cocktail.bar_name, cocktail_name=cocktail.cocktail_name)}
+        return Response(status=201, headers=header)
 
 
 class CocktailItem(Resource):
