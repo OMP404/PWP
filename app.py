@@ -28,8 +28,8 @@ class Bar(db.Model):
     name = db.Column(db.String(64), unique=True,nullable=False)
     address = db.Column(db.String(64), nullable=True)
 
-    tapdrink = db.relationship("Tapdrink", back_populates="bar")
-    cocktail = db.relationship("Cocktail", back_populates="bar")
+    tapdrink = db.relationship("Tapdrink", cascade="all, delete-orphan", back_populates="bar")
+    cocktail = db.relationship("Cocktail", cascade="all, delete-orphan", back_populates="bar")
 
     def serialize(self):
         return {
@@ -68,7 +68,7 @@ class Tapdrink(db.Model):
     price = db.Column(db.Float, unique=False, nullable=False)
     table_args_= (UniqueConstraint('bar_name', 'drink_name', 'drink_size', name='No duplicates in a bar'),
                      )
-    bar = db.relationship("Bar", cascade="all, delete-orphan", back_populates="tapdrink")
+    bar = db.relationship("Bar", back_populates="tapdrink")
 
     def serialize(self):
         return {
@@ -120,7 +120,7 @@ class Cocktail(db.Model):
     price = db.Column(db.Float, nullable=False)
     table_args_= (UniqueConstraint('bar_name', 'cocktail_name', name='No duplicates in a bar'),
                      )
-    bar = db.relationship("Bar", cascade="all, delete-orphan", back_populates="cocktail")
+    bar = db.relationship("Bar", back_populates="cocktail")
 
     def serialize(self):
         return {
