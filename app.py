@@ -17,7 +17,7 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Database/bar.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-
+JSON = "application/json"
 api = Api(app)
 db = SQLAlchemy(app)
 
@@ -76,8 +76,8 @@ class Tapdrink(db.Model):
     drink_name = db.Column(db.String(64), unique=False, nullable=False)
     drink_size = db.Column(db.Float, unique=False, nullable=False)
     price = db.Column(db.Float, unique=False, nullable=False)
-    table_args_ = (UniqueConstraint('bar_name', 'drink_name', 'drink_size', name='No duplicates in a bar'),
-                   )
+    table_args_ = (UniqueConstraint('bar_name', 'drink_name',
+                   'drink_size', name='No duplicates in a bar'))
     bar = db.relationship(
         "Bar", back_populates="tapdrink")
 
@@ -92,7 +92,7 @@ class Tapdrink(db.Model):
 
     def deserialize(self, doc):
         self.bar_name = doc["bar_name"]
-        self.drink_type = doc["drink_type"]
+        self.drink_type = doc.get("drink_type")
         self.drink_name = doc["drink_name"]
         self.drink_size = doc["drink_size"]
         self.price = doc["price"]
@@ -101,15 +101,11 @@ class Tapdrink(db.Model):
     def json_schema():
         schema = {
             "type": "object",
-            "required": ["bar_name", "drink_type", "drink_name", "drink_size", "price"]
+            "required": ["bar_name",  "drink_name", "drink_size", "price"]
         }
         props = schema["properties"] = {}
         props["bar_name"] = {
             "description": "The name of the bar",
-            "type": "string",
-        }
-        props["drink_type"] = {
-            "description": "The type of drink (Beer, Long Drink etc.)",
             "type": "string",
         }
         props["drink_name"] = {
@@ -135,8 +131,8 @@ class Cocktail(db.Model):
         "bar.name", ondelete="CASCADE"))
     cocktail_name = db.Column(db.String(64), unique=False, nullable=False)
     price = db.Column(db.Float, nullable=False)
-    table_args_ = (UniqueConstraint('bar_name', 'cocktail_name', name='No duplicates in a bar'),
-                   )
+    table_args_ = (UniqueConstraint(
+        'bar_name', 'cocktail_name', name='No duplicates in a bar'))
     bar = db.relationship(
         "Bar", back_populates="cocktail")
 
@@ -297,8 +293,9 @@ class TapdrinkCollection(Resource):
                 409,
                 description="Tapdrink with the same name and size already exists."
             )
-
-        return Response(status=201, headers={'Location': api.url_for(TapdrinkItem, tapdrink=tapdrink)})
+        header = {'Location': api.url_for(
+            TapdrinkItem, bar_name=tapdrink.bar_name, drink_name=tapdrink.drink_name, drink_size=tapdrink.drink_size)}
+        return Response(status=201, headers=header)
 
 
 class TapdrinkItem(Resource):
@@ -385,8 +382,9 @@ class CocktailCollection(Resource):
                 409,
                 description="Tapdrink with the same name and size already exists."
             )
-
-        return Response(status=201, headers={'Location': api.url_for(CocktailItem, cocktail=cocktail)})
+        header = {'Location': api.url_for(
+            CocktailItem, bar_name=cocktail.bar_name, cocktail_name=cocktail.cocktail_name)}
+        return Response(status=201, headers=header)
 
 
 class CocktailItem(Resource):
@@ -491,9 +489,18 @@ def test_document_command():
     Prints the bars available in the database
     """
     with app.app_context():
-        products = Bar.query.all()
-        for product in products:
-            print(product.serialize())
+        bars = Bar.query.all()
+        print("\nBars:")
+        for bar in bars:
+            print(bar.serialize())
+        tapdrinks = Tapdrink.query.all()
+        print("\nTapdrinks:")
+        for tapdrink in tapdrinks:
+            print(tapdrink.serialize())
+        cocktails = Cocktail.query.all()
+        print("\nCocktails:")
+        for cocktail in cocktails:
+            print(cocktail.serialize())
 
 
 app.url_map.converters["bar"] = BarConverter
