@@ -83,10 +83,10 @@ class Tapdrink(db.Model):
 
     def serialize(self):
         return {
-            "bar_name ": self.bar_name,
-            "drink type": self.drink_type,
-            "drink name": self.drink_name,
-            "drink size": self.drink_size,
+            "bar_name": self.bar_name,
+            "drink_type": self.drink_type,
+            "drink_name": self.drink_name,
+            "drink_size": self.drink_size,
             "price": self.price
         }
 
@@ -138,8 +138,8 @@ class Cocktail(db.Model):
 
     def serialize(self):
         return {
-            "bar_name ": self.bar_name,
-            "cocktail_name ": self.cocktail_name,
+            "bar_name": self.bar_name,
+            "cocktail_name": self.cocktail_name,
             "price": self.price
         }
 
@@ -194,7 +194,7 @@ class BarCollection(Resource):
         if not request.json:
             raise UnsupportedMediaType
         try:
-            validate(request.json, Tapdrink.json_schema())
+            validate(request.json, Bar.json_schema())
         except ValidationError as e:
             raise BadRequest(description=str(e))
 
@@ -209,6 +209,8 @@ class BarCollection(Resource):
                 409,
                 description="Bar with the same name already exists."
             )
+        except Exception as e:
+            print(e)
 
         return Response(status=201, headers={'Location': api.url_for(BarItem, bar=bar)})
 
@@ -250,15 +252,15 @@ class BarItem(Resource):
 class TapdrinkCollection(Resource):
 
     def get(self, bar):
-        db_bar = Bar.query.filter_by(name=bar).first()
-        if db_bar is None:
-            raise NotFound
+        # db_bar = Bar.query.filter_by(name=bar).first()
+        # if db_bar is None:
+        #     raise NotFound
 
         body = {
-            "bar": db_bar.name,
+            "bar": bar.name,
             "tapdrinks": []
         }
-        tapdrinks = Tapdrink.query.filter_by(bar_name=bar).all()
+        tapdrinks = Tapdrink.query.filter_by(bar_name=bar.name).all()
 
         for tapdrink in tapdrinks:
             body["tapdrinks"].append(
@@ -273,7 +275,7 @@ class TapdrinkCollection(Resource):
 
         return Response(json.dumps(body), 200, mimetype=JSON)
 
-    def post(self):
+    def post(self, bar):
         if not request.json:
             raise UnsupportedMediaType
 
@@ -294,7 +296,7 @@ class TapdrinkCollection(Resource):
                 description="Tapdrink with the same name and size already exists."
             )
         header = {'Location': api.url_for(
-            TapdrinkItem, bar_name=tapdrink.bar_name, drink_name=tapdrink.drink_name, drink_size=tapdrink.drink_size)}
+            TapdrinkItem, bar=tapdrink.bar, drinkname=tapdrink.drink_name, drinksize=tapdrink.drink_size)}
         return Response(status=201, headers=header)
 
 
@@ -302,7 +304,7 @@ class TapdrinkItem(Resource):
 
     def get(self, bar, drinkname, drinksize):
         tapdrink = Tapdrink.query.filter_by(
-            bar_name=bar, drink_name=drinkname, drink_size=drinksize).first()
+            bar_name=bar.name, drink_name=drinkname, drink_size=drinksize).first()
         body = tapdrink.serialize()
         return Response(json.dumps(body), 200, mimetype=JSON)
 
@@ -316,7 +318,7 @@ class TapdrinkItem(Resource):
             raise BadRequest(description=str(e))
 
         tapdrink = Tapdrink.query.filter_by(
-            bar_name=bar, drink_name=drinkname, drink_size=drinksize).first()
+            bar_name=bar.name, drink_name=drinkname, drink_size=drinksize).first()
         tapdrink.deserialize(request.json)
 
         try:
@@ -332,7 +334,7 @@ class TapdrinkItem(Resource):
 
     def delete(self, bar, drinkname, drinksize):
         tapdrink = Tapdrink.query.filter_by(
-            bar_name=bar, drink_name=drinkname, drink_size=drinksize).first()
+            bar_name=bar.name, drink_name=drinkname, drink_size=drinksize).first()
         db.session.delete(tapdrink)
         db.session.commit()
         return Response(status=204)
@@ -391,7 +393,7 @@ class CocktailItem(Resource):
 
     def get(self, bar, cocktailname):
         cocktail = Cocktail.query.filter_by(
-            bar_name=bar, cocktail_name=cocktailname).first()
+            bar_name=bar.name, cocktail_name=cocktailname).first()
         body = cocktail.serialize()
         return Response(json.dumps(body), 200, mimetype=JSON)
 
@@ -400,12 +402,12 @@ class CocktailItem(Resource):
             raise UnsupportedMediaType
 
         try:
-            validate(request.json, cocktail.json_schema())
+            validate(request.json, Cocktail.json_schema())
         except ValidationError as e:
             raise BadRequest(description=str(e))
 
         cocktail = Cocktail.query.filter_by(
-            bar_name=bar, cocktail_name=cocktailname).first()
+            bar_name=bar.name, cocktail_name=cocktailname).first()
         cocktail.deserialize(request.json)
 
         try:
@@ -421,7 +423,7 @@ class CocktailItem(Resource):
 
     def delete(self, bar, cocktailname):
         cocktail = Cocktail.query.filter_by(
-            bar_name=bar, cocktail_name=cocktailname).first()
+            bar_name=bar.name, cocktail_name=cocktailname).first()
         db.session.delete(cocktail)
         db.session.commit()
         return Response(status=204)
@@ -507,10 +509,10 @@ app.url_map.converters["bar"] = BarConverter
 
 api.add_resource(BarCollection, "/api/bars/")
 api.add_resource(BarItem, "/api/bars/<bar:bar>/")
-api.add_resource(TapdrinkCollection, "/api/bars/<bar:bar>/tapdrinks")
+api.add_resource(TapdrinkCollection, "/api/bars/<bar:bar>/tapdrinks/")
 api.add_resource(
-    TapdrinkItem, "/api/bars/<bar:bar>/tapdrinks/<drinkname>/<drinksize>")
-api.add_resource(CocktailCollection, "/api/bars/<bar:bar>/cocktails")
+    TapdrinkItem, "/api/bars/<bar:bar>/tapdrinks/<drinkname>/<drinksize>/")
+api.add_resource(CocktailCollection, "/api/bars/<bar:bar>/cocktails/")
 api.add_resource(CocktailItem, "/api/bars/<bar:bar>/cocktails/<cocktailname>/")
 
 # Add cli commands to the app
