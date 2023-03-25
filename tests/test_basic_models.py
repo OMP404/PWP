@@ -1,4 +1,3 @@
-from app import Bar, Cocktail, Tapdrink, app, db
 import os
 import sys
 import tempfile
@@ -8,8 +7,10 @@ from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
 # add parent directory to path to import app (when running tests from root directory)
-current = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.dirname(current))
+current = os.path.dirname(os.path.realpath(__file__))  # nopep8
+sys.path.append(os.path.dirname(current))  # nopep8
+
+from app import Bar, Cocktail, Tapdrink, app, db  # nopep8
 
 
 @pytest.fixture
@@ -126,7 +127,7 @@ def test_tapdrink_model(db_handle):
 
     Returns:
         None.
-    
+
     '''
     bar = _create_bar()
     db_handle.session.add(bar)
@@ -183,6 +184,7 @@ def test_bar_and_tapdrink_model(db_handle):
     assert Tapdrink.query.count() == 1
     assert Bar.query.count() == 1
     # assert tapdrink has correct values
+    assert db_tapdrink.bar_name == 'Test-bar'
     assert db_tapdrink.drink_type == 'Test-type'
     assert db_tapdrink.drink_name == 'Test-tapdrink'
     assert db_tapdrink.drink_size == 0.5
@@ -195,6 +197,7 @@ def test_bar_and_tapdrink_model(db_handle):
     assert db_bar.name == 'Test-bar'
     assert db_bar.address == 'Test-address'
     # assert tapdrink has correct values within bar
+    assert db_bar.tapdrink[0].bar_name == 'Test-bar'
     assert db_bar.tapdrink[0].drink_type == 'Test-type'
     assert db_bar.tapdrink[0].drink_name == 'Test-tapdrink'
     assert db_bar.tapdrink[0].drink_size == 0.5
@@ -238,76 +241,5 @@ def test_bar_and_cocktail_model(db_handle):
     assert db_bar == db_cocktail.bar
 
 
-'''
-******* RESOURCE TESTS *******
-'''
-
-
-def test_barcollection_get(db_handle, client_handle):
-    '''
-    Test method for the GET request to retrieve a the "BarCollection" i.e. a list of bars.
-
-    Args:
-        db_handle: SQLAlchemy database handle.
-        client_handle: Flask test client.
-
-    Returns:
-        None.
-    '''
-    bar = _create_bar()
-    db_handle.session.add(bar)
-    db_handle.session.commit()
-    response = client_handle.get('/api/bars/')
-    assert response.status_code == 200
-    assert response.json['bars'][0]['name'] == 'Test-bar'
-    assert response.json['bars'][0]['address'] == 'Test-address'
-
-
-def test_baritem_get(db_handle, client_handle):
-    '''
-    Test method for the GET request to retrieve a specific bar.
-
-    Args:
-        db_handle: SQLAlchemy database handle.
-        client_handle: Flask test client.
-
-    Returns:
-        None.
-    '''
-    bar = _create_bar()
-    db_handle.session.add(bar)
-    db_handle.session.commit()
-    response = client_handle.get('/api/bars/Test-bar/')
-    assert response.status_code == 200
-    assert response.json['name'] == 'Test-bar'
-    assert response.json['address'] == 'Test-address'
-
-
-def test_tapdrinkcollection_get(db_handle, client_handle):
-    '''
-    Test method for the GET request to retrieve a the "TapdrinkCollection" i.e. a list of tapdrinks.
-
-    Args:
-        db_handle: SQLAlchemy database handle.
-        client_handle: Flask test client.
-
-    Returns:
-        None.
-    '''
-    bar = _create_bar()
-    db_handle.session.add(bar)
-    db_handle.session.commit()
-    tapdrink = _create_tapdrink()
-    tapdrink.bar = bar
-    db_handle.session.add(tapdrink)
-    db_handle.session.commit()
-    response = client_handle.get('/api/bars/Test-bar/tapdrinks/')
-    assert response.status_code == 200
-    assert response.json['tapdrinks'][0]['drink_type'] == 'Test-type'
-    assert response.json['tapdrinks'][0]['drink_name'] == 'Test-tapdrink'
-    assert response.json['tapdrinks'][0]['drink_size'] == 0.5
-    assert response.json['tapdrinks'][0]['price'] == 1.0
-
-
 if __name__ == '__main__':
-    pytest.main()
+    pytest.main(['-v', '-s', __file__])

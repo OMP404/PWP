@@ -1,7 +1,5 @@
 env/
-__pycache__/
+__pycache__*
+.pytest_cache*
+.coverage*
 bar.db
-tests/__pycache__/
-tests/.pytest_cache/
-.pytest_cache/
-.coverage
