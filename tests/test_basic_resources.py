@@ -131,7 +131,6 @@ def test_barcollection_post(db_handle, client_handle):
     Returns:
         None.
     '''
-    # db_handle.session.commit()
     bar = _create_bar()
     response = client_handle.post(
         '/api/bars/', json={'name': f'{bar.name}', 'address': f'{bar.address}'})
@@ -252,7 +251,7 @@ def test_tapdrinkcollection_post(db_handle, client_handle):
     db_handle.session.add(bar)
     db_handle.session.commit()
     tapdrink = _create_tapdrink()
-    tapdrink.bar = bar
+    # tapdrink.bar = bar
     response = client_handle.post(f'/api/bars/{bar.name}/tapdrinks/', json={'bar_name': f'{bar.name}', 'drink_type': f'{tapdrink.drink_type}',
                                   'drink_name': f'{tapdrink.drink_name}', 'drink_size': tapdrink.drink_size, 'price': tapdrink.price})
     assert response.status_code == 201
@@ -354,6 +353,60 @@ def test_tapdrinkitem_delete(db_handle, client_handle):
         '/api/bars/Test-bar/tapdrinks/Test-tapdrink/0.5/')
     # assert the tapdrink does not exist
     assert new_response.status_code == 404
+
+
+def test_cocktailcollection_get(db_handle, client_handle):
+    '''
+    Test method for the GET request to retrieve all coctails.
+
+    Args:
+        db_handle: SQLAlchemy database handle.
+        client_handle: Flask test client.
+
+    Returns:
+        None.
+    '''
+    bar = _create_bar()
+    db_handle.session.add(bar)
+    db_handle.session.commit()
+    cocktail = _create_cocktail()
+    cocktail.bar = bar
+    db_handle.session.add(cocktail)
+    db_handle.session.commit()
+    response = client_handle.get(
+        '/api/bars/Test-bar/cocktails/')
+    assert response.status_code == 200
+    assert response.json['cocktails'][0]['bar_name'] == 'Test-bar'
+    assert response.json['cocktails'][0]['cocktail_name'] == 'Test-cocktail'
+    assert response.json['cocktails'][0]['price'] == 1.0
+
+
+def test_cocktailcollection_post(db_handle, client_handle):
+    '''
+    Test method for the POST request to create a new coctail.
+
+    Args:
+        db_handle: SQLAlchemy database handle.
+        client_handle: Flask test client.
+
+    Returns:
+        None.
+    '''
+    bar = _create_bar()
+    db_handle.session.add(bar)
+    db_handle.session.commit()
+    cocktail = _create_cocktail()
+    response = client_handle.post(
+        '/api/bars/Test-bar/cocktails/',
+        json={'bar_name': f"{bar.name}", 'cocktail_name': f'{cocktail.cocktail_name}', 'price': cocktail.price})
+    assert response.status_code == 201
+    new_response = client_handle.get(
+        '/api/bars/Test-bar/cocktails/Test-cocktail/')
+    # assert the new coctail exists
+    assert new_response.status_code == 200
+    assert new_response.json['bar_name'] == 'Test-bar'
+    assert new_response.json['cocktail_name'] == 'Test-cocktail'
+    assert new_response.json['price'] == 1.0
 
 
 def test_cocktailitem_get(db_handle, client_handle):

@@ -241,5 +241,35 @@ def test_bar_and_cocktail_model(db_handle):
     assert db_bar == db_cocktail.bar
 
 
+def test_bar_ondelete(db_handle):
+    '''
+    Test method for checking the ondelete behaviour of the Bar model,
+    so that all the tapdrink and cocktail objects get deleted with the
+    deletion of the Bar model associated with them.
+
+    Args:
+        db_handle: SQLAlchemy database handle.
+
+    Returns:
+        None.
+    '''
+    bar = _create_bar()
+    tapdrink = _create_tapdrink()
+    tapdrink.bar = bar
+    cocktail = _create_cocktail()
+    cocktail.bar = bar
+    db_handle.session.add(tapdrink)
+    db_handle.session.add(cocktail)
+    db_handle.session.commit()
+    assert Bar.query.count() == 1
+    assert Tapdrink.query.count() == 1
+    assert Cocktail.query.count() == 1
+    db_handle.session.delete(bar)
+    db_handle.session.commit()
+    assert Bar.query.count() == 0
+    assert Tapdrink.query.count() == 0
+    assert Cocktail.query.count() == 0
+
+
 if __name__ == '__main__':
     pytest.main(['-v', '-s', __file__])

@@ -275,7 +275,7 @@ class TapdrinkCollection(Resource):
 
         return Response(json.dumps(body), 200, mimetype=JSON)
 
-    def post(self, bar):
+    def post(self, bar=None):
         if not request.json:
             raise UnsupportedMediaType
 
@@ -305,6 +305,8 @@ class TapdrinkItem(Resource):
     def get(self, bar, drinkname, drinksize):
         tapdrink = Tapdrink.query.filter_by(
             bar_name=bar.name, drink_name=drinkname, drink_size=drinksize).first()
+        if tapdrink is None:
+            raise NotFound
         body = tapdrink.serialize()
         return Response(json.dumps(body), 200, mimetype=JSON)
 
@@ -335,6 +337,8 @@ class TapdrinkItem(Resource):
     def delete(self, bar, drinkname, drinksize):
         tapdrink = Tapdrink.query.filter_by(
             bar_name=bar.name, drink_name=drinkname, drink_size=drinksize).first()
+        if tapdrink is None:
+            raise NotFound
         db.session.delete(tapdrink)
         db.session.commit()
         return Response(status=204)
@@ -343,15 +347,14 @@ class TapdrinkItem(Resource):
 class CocktailCollection(Resource):
 
     def get(self, bar):
-        db_bar = Bar.query.filter_by(name=bar).first()
-        if db_bar is None:
-            raise NotFound
-
+        # db_bar = Bar.query.filter_by(name=bar.).first()
+        # if db_bar is None:
+        #     raise NotFound
         body = {
-            "bar": db_bar.name,
+            "bar": bar.name,
             "cocktails": []
         }
-        cocktails = Cocktail.query.filter_by(bar_name=bar).all()
+        cocktails = Cocktail.query.filter_by(bar_name=bar.name).all()
 
         for cocktail in cocktails:
             body["cocktails"].append(
@@ -364,7 +367,7 @@ class CocktailCollection(Resource):
 
         return Response(json.dumps(body), 200, mimetype=JSON)
 
-    def post(self):
+    def post(self, bar=None):
         if not request.json:
             raise UnsupportedMediaType
 
@@ -385,7 +388,7 @@ class CocktailCollection(Resource):
                 description="Tapdrink with the same name and size already exists."
             )
         header = {'Location': api.url_for(
-            CocktailItem, bar_name=cocktail.bar_name, cocktail_name=cocktail.cocktail_name)}
+            CocktailItem, bar=cocktail.bar, cocktailname=cocktail.cocktail_name)}
         return Response(status=201, headers=header)
 
 
@@ -394,6 +397,8 @@ class CocktailItem(Resource):
     def get(self, bar, cocktailname):
         cocktail = Cocktail.query.filter_by(
             bar_name=bar.name, cocktail_name=cocktailname).first()
+        if cocktail is None:
+            raise NotFound
         body = cocktail.serialize()
         return Response(json.dumps(body), 200, mimetype=JSON)
 
@@ -424,6 +429,8 @@ class CocktailItem(Resource):
     def delete(self, bar, cocktailname):
         cocktail = Cocktail.query.filter_by(
             bar_name=bar.name, cocktail_name=cocktailname).first()
+        if cocktail is None:
+            raise NotFound
         db.session.delete(cocktail)
         db.session.commit()
         return Response(status=204)
