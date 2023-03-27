@@ -1,0 +1,100 @@
+---
+openapi: 3.0.3
+servers:
+- url: /api
+components:
+  parameters:
+    bar:
+      description: Selected bar's unique name
+      in: path
+      name: bar
+      required: true
+      schema:
+        type: string
+    drink_name:
+      description: Selected tapdrinks's name
+      in: path
+      name: drink_name
+      required: true
+      schema:
+        type: string
+    drink_size:
+      description: Selected tapdrinks's size
+      in: path
+      name: drink_size
+      required: true
+      schema:
+        type: number
+    cocktail_name:
+      description: Selected cocktails unique name
+      in: path
+      name: cocktail_name
+      required: true
+      schema:
+        type: string
+  schemas:
+    Bar:
+      properties:
+        name:
+          description: Bar's unique name
+          type: string
+        address:
+          description: Bar's address
+          type: string
+      required:
+      - name
+      - address
+      type: object
+    Tapdrink:
+      properties:
+        bar_name:
+          description: The name of the bar
+          type: string
+        drink_name:
+          description: The name of the drink (Karhu, Koff etc.)
+          type: string
+        drink_size:
+          description: The size of the drink in liters
+          type: number
+          minimum: 0
+        price:
+          description: The price of the drink in euros
+          type: number
+          minimum: 0
+      required:
+      - bar_name
+      - drink_name
+      - drink_size
+      - price
+      type: object
+    Cocktail:
+      properties:
+        bar_name:
+          description: The name of the bar
+          type: string
+        cocktail_name:
+          description: The name of the cocktails
+          type: string
+        price:
+          description: The price of the cocktail
+          type: number
+          minimum: 0
+      required:
+      - bar_name
+      - cocktail_name
+      - price
+      type: object
+info:
+  title: Oulu Bar API
+  version: 0.0.1
+  description: |
+    This is an API project for the Programmable Web Project course.
+    It stores data about Oulu's bars and their drink selection
+  termsOfService: http://totally.not.placehold.er/
+  contact:
+    url: http://totally.not.placehold.er/
+    email: pwp-course@lists.oulu.fi
+    name: PWP Staff List
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html

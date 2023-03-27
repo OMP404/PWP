@@ -1,0 +1,64 @@
+parameters:
+  - $ref: '#/components/parameters/bar/'
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            almeta:add-tapdrink:
+              encoding: json
+              href: /api/bars/Ilona/tapdrinks/
+              method: POST
+              schema:
+                properties:
+                  bar_name:
+                    description: The name of the bar
+                    type: string
+                  drink_name:
+                    description: The name of the drink (Karhu, Koff etc.)
+                    type: string
+                  drink_size:
+                    description: The size of the drink in liters
+                    minimum: 0
+                    type: number
+                  price:
+                    description: The price of the drink in euros
+                    minimum: 0
+                    type: number
+                required:
+                - bar_name
+                - drink_name
+                - drink_size
+                - price
+                type: object
+              title: Add a tapdrink
+            almeta:in-bar:
+              encoding: json
+              href: /api/bars/Ilona/
+              method: GET
+              title: Return to the bar where the drink is sold
+            self:
+              href: /api/bars/Ilona/tapdrinks/
+          '@namespaces':
+            almeta:
+              name: /alcoholmeta/link-relations/
+          items:
+          - '@controls':
+              self:
+                href: /api/bars/Ilona/tapdrinks/Newcastle/0,33/
+            bar_name: Ilona
+            drink_name: Newcastle
+            drink_size: 0,33
+            drink_type: Beer
+            price: 5.35
+          - '@controls':
+              self:
+                href: /api/bars/Ilona/tapdrinks/Original%20Long%20Drink/0,33/
+            bar_name: Ilona
+            drink_name: Original Long Drink
+            drink_size: 0,33
+            drink_type: Long drink
+            price: 6.0
+ '404':
+    description: The bar was not found

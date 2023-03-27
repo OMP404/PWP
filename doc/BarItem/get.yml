@@ -1,0 +1,46 @@
+parameters:
+  - $ref: '#/components/parameters/bar/'
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            almeta:cocktails-in:
+              href: /api/bars/Ilona/cocktails/
+            almeta:delete-bar:
+              href: /api/bars/Ilona/
+              method: DELETE
+              title: Delete this bar
+            almeta:edit-bar:
+              encoding: json
+              href: /api/bars/Ilona/
+              method: PUT
+              schema:
+                properties:
+                  address:
+                    description: The address for the bar
+                    type: string
+                  name:
+                    description: The name of the bar
+                    type: string
+                required:
+                - name
+                - address
+                type: object
+              title: Edit this bar
+            almeta:tapdrinks-in:
+              href: /api/bars/Ilona/tapdrinks/
+            collection:
+              href: /api/bars/
+            self:
+              href: /api/bars/Ilona/
+          '@namespaces':
+            almeta:
+              name: /alcoholmeta/link-relations/
+            profile:
+              name: /profiles/bar/
+          address: Torikatu 21 Oulu
+          name: Ilona
+  '404':
+    description: The bar was not found

@@ -1,0 +1,57 @@
+parameters:
+  - $ref: '#/components/parameters/bar/'
+  - $ref: '#/components/parameters/drink_name/'
+  - $ref: '#/components/parameters/drink_size/'
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            almeta:delete-tapdrink:
+              href: /api/bars/Ilona/tapdrinks/Newcastle/0,33/
+              method: DELETE
+              title: Delete this tapdrink
+            collection:
+              href: /api/bars/Ilona/tapdrinks/
+            edit-tapdrink:
+              encoding: json
+              href: /api/bars/Ilona/tapdrinks/Newcastle/0,33/
+              method: PUT
+              schema:
+                properties:
+                  bar_name:
+                    description: The name of the bar
+                    type: string
+                  drink_name:
+                    description: The name of the drink (Karhu, Koff etc.)
+                    type: string
+                  drink_size:
+                    description: The size of the drink in liters
+                    minimum: 0
+                    type: number
+                  price:
+                    description: The price of the drink in euros
+                    minimum: 0
+                    type: number
+                required:
+                - bar_name
+                - drink_name
+                - drink_size
+                - price
+                type: object
+              title: Edit this tapdrink
+            self:
+              href: /api/bars/Ilona/tapdrinks/Newcastle/0,33/
+          '@namespaces':
+            almeta:
+              name: /alcoholmeta/link-relations/
+            profile:
+              name: /profiles/tapdrink
+          bar_name: Ilona
+          drink_name: Newcastle
+          drink_size: 0,33
+          drink_type: Beer
+          price: 5.35
+ '404':
+    description: The bar was not found

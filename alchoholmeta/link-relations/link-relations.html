@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>API Documentation</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #ddd;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>API Documentation</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Link Relation</th>
+                <th>Description</th>
+                <th>URI</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>collection</td>
+                <td>A link to the collection itself</td>
+                <td>/api/bars/<bar:bar>/, /api/bars/<bar:bar>/tapdrinks/, /api/bars/<bar:bar>/cocktails/</td>
+            </tr>
+            <tr>
+                <td>almeta:add-bar</td>
+                <td>Add a bar to the collection</td>
+                <td>/api/bars/</td>
+            </tr>
+            <tr>
+                <td>almeta:delete-bar</td>
+                <td>Delete a bar from the collection</td>
+                <td>/api/bars/&lt;bar:bar&gt;/</td>
+            </tr>
+            <tr>
+                <td>almeta:edit-bar</td>
+                <td>Edit the information of a bar in the collection</td>
+                <td>/api/bars/&lt;bar:bar&gt;/</td>
+            </tr>
+            <tr>
+                <td>almeta:in-bar</td>
+                <td>A link to the bar where the drink is sold</td>
+                <td>/api/bars/&lt;bar:bar&gt;/</td>
+            </tr>
+            <tr>
+                <td>almeta:delete-tapdrink</td>
+                <td>Delete a tapdrink from the collection</td>
+                <td>/api/bars/&lt;bar:bar&gt;/tapdrinks/&lt;drink_name&gt;/&lt;drink_size&gt;/</td>
+            </tr>
+            <tr>
+                <td>almeta:add-tapdrink</td>
+                <td>Add a tapdrink to the collection</td>
+                <td>/api/bars/&lt;bar:bar&gt;/tapdrinks/</td>
+            </tr>
+            <tr>
+                <td>edit-tapdrink</td>
+                <td>Edit the information of a tapdrink in the collection</td>
+                <td>/api/bars/&lt;bar:bar&gt;/tapdrinks/&lt;drink_name&gt;/&lt;drink_size&gt;/</td>
+            </tr>
+            <tr>
+                <td>almeta:delete-cocktail</td>
+                <td>Delete a cocktail from the collection</td>
+                <td>/api/bars/&lt;bar:bar&gt;/cocktails/&lt;cocktail_name&gt;/</td>
+            </tr>
+            <tr>
+                <td>almeta:add-cocktail</td>
+                <td>Add a cocktail to the collection</td>
+                <td>/api/bars/&lt;bar:bar&gt;/
+
+</html>

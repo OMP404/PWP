@@ -1,0 +1,66 @@
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            almeta:add-bar:
+              encoding: json
+              href: /api/bars/
+              method: POST
+              schema:
+                properties:
+                  address:
+                    description: The address for the bar
+                    type: string
+                  name:
+                    description: The name of the bar
+                    type: string
+                required:
+                - name
+                - address
+                type: object
+              title: Add a bar
+            self:
+              href: /api/bars/
+          '@namespaces':
+            almeta:
+              name: /alcoholmeta/link-relations/
+          items:
+          - '@controls':
+              self:
+                href: /api/bars/Ilona/
+            address: Torikatu 21 Oulu
+            name: Ilona
+          - '@controls':
+              self:
+                href: /api/bars/Mango discobar/
+            address: Saaristonkatu 16 Oulu
+            name: Mango discobar
+          - '@controls':
+              self:
+                href: /api/bars/Pub graali/
+            address: Saaristonkatu 5 Oulu
+            name: Pub graali
+          - '@controls':
+              self:
+                href: /api/bars/Pub olohuone/
+            address: Mielikintie 1 Oulu
+            name: Pub olohuone
+          - '@controls':
+              self:
+                href: /api/bars/Jumpru pub & patio/
+            address: Kapuppurienkatu 6 Oulu
+            name: Jumpru pub & patio
+          - '@controls':
+              self:
+                href: /api/bars/Club labra/
+            address: Sammonkatu 8 Oulu
+            name: Club labra
+          - '@controls':
+              self:
+                href: /api/bars/Heidi's bier bar oulu/
+            address: Kirkkokatu 16 Oulu
+            name: Heidi's bier bar oulu
+  '404':
+    description: The bar was not found
