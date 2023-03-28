@@ -28,7 +28,7 @@ responses:
                 - price
                 type: object
               title: Add a cocktail
-            almeta:in-bar:
+            author:
               encoding: json
               href: /api/bars/Ilona/
               method: GET

@@ -1,5 +1,6 @@
 parameters:
   - $ref: '#/components/parameters/bar/'
+  - $ref: '/components/parameters/cocktail_name/'
 responses:
   '200':
     content:

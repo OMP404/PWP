@@ -296,15 +296,6 @@ class InventoryBuilder(MasonBuilder):
 
         )
 
-    def add_control_in_bar(self, bar):
-        self.add_control(
-            "almeta:in-bar",
-            api.url_for(BarItem, bar=bar),
-            method="GET",
-            encoding="json",
-            title="Return to the bar where the drink is sold"
-        )
-
     def add_control_delete_tapdrink(self, bar, drink_name, drink_size):
         self.add_control(
             "almeta:delete-tapdrink",
@@ -467,7 +458,7 @@ class TapdrinkCollection(Resource):
         body.add_namespace("almeta", LINK_RELATIONS_URL)
         body.add_control("self", href=request.path)
         body.add_control_add_tapdrink(bar)
-        body.add_control_in_bar(bar)
+        body.add_control("author", href=api.url_for(BarItem, bar=bar))
 
         for tapdrink in Tapdrink.query.filter_by(bar_name=bar.name).all():
             item = InventoryBuilder(
@@ -587,7 +578,7 @@ class CocktailCollection(Resource):
         body.add_namespace("almeta", LINK_RELATIONS_URL)
         body.add_control("self", href=request.path)
         body.add_control_add_cocktail(bar)
-        body.add_control_in_bar(bar)
+        body.add_control("author", href=api.url_for(BarItem, bar=bar))
 
         for cocktail in Cocktail.query.filter_by(bar_name=bar.name).all():
             item = InventoryBuilder(
