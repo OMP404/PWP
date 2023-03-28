@@ -12,7 +12,7 @@ responses:
               href: /api/bars/Ilona/
               method: DELETE
               title: Delete this bar
-            almeta:edit-bar:
+            edit-bar:
               encoding: json
               href: /api/bars/Ilona/
               method: PUT

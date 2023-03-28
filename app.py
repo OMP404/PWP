@@ -287,7 +287,7 @@ class InventoryBuilder(MasonBuilder):
 
     def add_control_edit_bar(self, bar):
         self.add_control(
-            "almeta:edit-bar",
+            "edit-bar",
             api.url_for(BarItem, bar=bar),
             method="PUT",
             encoding="json",
