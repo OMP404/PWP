@@ -1,0 +1,27 @@
+parameters:
+  - $ref: '#/components/parameters/bar'
+description: Create a new cocktail
+requestBody:
+  description: JSON document that contains basic data for a new cocktail
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Cocktail'
+      example:
+        bar_name: Test pub
+        cocktail_name: Screwdriver
+        price: 5.5
+responses:
+  '201':
+    description: The cocktail was created successfully
+    headers:
+      Location: 
+        description: URI of the new cocktail
+        schema: 
+          type: string
+  '400':
+    description: The request body was not valid
+  '415':
+    description: Wrong media type was used
+  '500':
+    description: A database error

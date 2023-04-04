@@ -1,0 +1,25 @@
+parameters:
+  - $ref: '#/components/parameters/bar'
+  - $ref: '#/components/parameters/cocktail_name'
+description: Replace cocktail's basic data with new values
+requestBody:
+  description: JSON document that contains new basic data for the cocktail
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Cocktail'
+      example:
+        bar_name: Test pub
+        cocktail_name: Screwdriver
+        price: 5.5
+responses:
+  '204':
+    description: The cocktail's attributes were updated successfully
+  '400':
+    description: The request body was not valid
+  '404':
+    description: The cocktail was not found
+  '415':
+    description: Wrong media type was used
+  '500':
+    description: A database error

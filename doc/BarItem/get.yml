@@ -1,5 +1,6 @@
 parameters:
-  - $ref: '#/components/parameters/bar/'
+  - $ref: '#/components/parameters/bar'
+description: Get details of one bar
 responses:
   '200':
     content:
@@ -17,17 +18,7 @@ responses:
               href: /api/bars/Ilona/
               method: PUT
               schema:
-                properties:
-                  address:
-                    description: The address for the bar
-                    type: string
-                  name:
-                    description: The name of the bar
-                    type: string
-                required:
-                - name
-                - address
-                type: object
+                $ref: '#/components/schemas/Bar'
               title: Edit this bar
             almeta:tapdrinks-in:
               href: /api/bars/Ilona/tapdrinks/

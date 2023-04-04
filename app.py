@@ -202,7 +202,7 @@ class Cocktail(db.Model):
 
 class MasonBuilder(dict):
     """
-    A convenience class for managing dictionaries that represent Mason
+    A convenience class from the PWP course material for managing dictionaries that represent Mason
     objects. It provides nice shorthands for inserting some of the more
     elements into the object but mostly is just a parent for the much more
     useful subclass defined next. This class is generic in the sense that it
@@ -266,6 +266,9 @@ class MasonBuilder(dict):
 
 
 class InventoryBuilder(MasonBuilder):
+    """
+    from the PWP course material
+    """
 
     def add_control_delete_bar(self, bar):
         self.add_control(
@@ -391,9 +394,9 @@ class BarCollection(Resource):
             return create_error_response(415, "Unsupported media type", "Use JSON")
 
         try:
-            validate(request.json, Tapdrink.json_schema())
+            validate(request.json, Bar.json_schema())
         except ValidationError as e:
-            raise create_error_response(400, "Invalid JSON document", str(e))
+            return create_error_response(400, "Invalid JSON document")
 
         bar = Bar()
         bar.deserialize(request.json)
@@ -431,7 +434,7 @@ class BarItem(Resource):
         if not request.json:
             return create_error_response(415, "Unsupported media type", "Use JSON")
         try:
-            validate(request.json, bar.json_schema())
+            validate(request.json, Bar.json_schema())
         except ValidationError as e:
             return create_error_response(400, "Invalid JSON document", str(e))
 
@@ -656,7 +659,7 @@ class CocktailItem(Resource):
             return create_error_response(415, "Unsupported media type", "Use JSON")
 
         try:
-            validate(request.json, cocktail.json_schema())
+            validate(request.json, Cocktail.json_schema())
         except ValidationError as e:
             return create_error_response(400, "Invalid JSON document", str(e))
 

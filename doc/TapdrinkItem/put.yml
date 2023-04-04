@@ -1,0 +1,27 @@
+parameters:
+  - $ref: '#/components/parameters/bar'
+  - $ref: '#/components/parameters/drink_name'
+  - $ref: '#/components/parameters/drink_size'
+description: Replace tapdrink's basic data with new values
+requestBody:
+  description: JSON document that contains new basic data for the tapdrink
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Tapdrink'
+      example:
+        bar_name: Test pub
+        drink_name: Karhu
+        drink_size: 0.33
+        price: 4.0
+responses:
+  '204':
+    description: The tapdrinks's attributes were updated successfully
+  '400':
+    description: The request body was not valid
+  '404':
+    description: The tapdrink was not found
+  '415':
+    description: Wrong media type was used
+  '500':
+    description: A database error

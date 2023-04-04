@@ -1,0 +1,28 @@
+parameters:
+  - $ref: '#/components/parameters/bar'
+description: Create a new tapdrink
+requestBody:
+  description: JSON document that contains basic data for a new tapdrink
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Tapdrink'
+      example:
+        bar_name: Test pub
+        drink_name: Karhu
+        drink_size: 0.33
+        price: 4.0
+responses:
+  '201':
+    description: The tapdrink was created successfully
+    headers:
+      Location: 
+        description: URI of the new tapdrink
+        schema: 
+          type: string
+  '400':
+    description: The request body was not valid
+  '415':
+    description: Wrong media type was used
+  '500':
+    description: A database error

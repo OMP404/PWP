@@ -1,6 +1,7 @@
 parameters:
-  - $ref: '#/components/parameters/bar/'
-  - $ref: '/components/parameters/cocktail_name/'
+  - $ref: '#/components/parameters/bar'
+  - $ref: '#/components/parameters/cocktail_name'
+description: Get details of one cocktail in the selected bar
 responses:
   '200':
     content:
@@ -18,22 +19,7 @@ responses:
               href: /api/bars/Ilona/cocktails/Screwdriver/
               method: PUT
               schema:
-                properties:
-                  bar_name:
-                    description: The name of the bar
-                    type: string
-                  name:
-                    description: The name of the cocktail
-                    type: string
-                  price:
-                    description: The price of the cocktail
-                    minimum: 0
-                    type: number
-                required:
-                - bar_name
-                - cocktail_name
-                - price
-                type: object
+                $ref: '#/components/schemas/Cocktail'
               title: Edit this cocktail
             self:
               href: /api/bars/Ilona/cocktails/Screwdriver/
@@ -45,5 +31,5 @@ responses:
           bar_name: Ilona
           cocktail_name: Screwdriver
           price: 6.0
- '404':
+  '404':
     description: The bar was not found

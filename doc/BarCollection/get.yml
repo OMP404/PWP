@@ -1,5 +1,7 @@
+description: Get the list of managed bars
 responses:
   '200':
+    description: List of bars
     content:
       application/vnd.mason+json:
         example:
@@ -9,17 +11,7 @@ responses:
               href: /api/bars/
               method: POST
               schema:
-                properties:
-                  address:
-                    description: The address for the bar
-                    type: string
-                  name:
-                    description: The name of the bar
-                    type: string
-                required:
-                - name
-                - address
-                type: object
+                $ref: '#/components/schemas/Bar'
               title: Add a bar
             self:
               href: /api/bars/
@@ -63,4 +55,4 @@ responses:
             address: Kirkkokatu 16 Oulu
             name: Heidi's bier bar oulu
   '404':
-    description: The bar was not found
+    description: The bars were not found

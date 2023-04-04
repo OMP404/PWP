@@ -1,7 +1,9 @@
+description: Get the list of managed tapdrinks in the selected bar
 parameters:
-  - $ref: '#/components/parameters/bar/'
+  - $ref: '#/components/parameters/bar'
 responses:
   '200':
+    description: List of tapdrinks in bar
     content:
       application/vnd.mason+json:
         example:
@@ -11,27 +13,7 @@ responses:
               href: /api/bars/Ilona/tapdrinks/
               method: POST
               schema:
-                properties:
-                  bar_name:
-                    description: The name of the bar
-                    type: string
-                  drink_name:
-                    description: The name of the drink (Karhu, Koff etc.)
-                    type: string
-                  drink_size:
-                    description: The size of the drink in liters
-                    minimum: 0
-                    type: number
-                  price:
-                    description: The price of the drink in euros
-                    minimum: 0
-                    type: number
-                required:
-                - bar_name
-                - drink_name
-                - drink_size
-                - price
-                type: object
+                $ref: '#/components/schemas/Tapdrink'
               title: Add a tapdrink
             author:
               encoding: json
@@ -60,5 +42,5 @@ responses:
             drink_size: 0,33
             drink_type: Long drink
             price: 6.0
- '404':
+  '404':
     description: The bar was not found

@@ -1,7 +1,8 @@
 parameters:
-  - $ref: '#/components/parameters/bar/'
-  - $ref: '#/components/parameters/drink_name/'
-  - $ref: '#/components/parameters/drink_size/'
+  - $ref: '#/components/parameters/bar'
+  - $ref: '#/components/parameters/drink_name'
+  - $ref: '#/components/parameters/drink_size'
+description: Get details of one cocktail in the selected bar
 responses:
   '200':
     content:
@@ -19,27 +20,7 @@ responses:
               href: /api/bars/Ilona/tapdrinks/Newcastle/0,33/
               method: PUT
               schema:
-                properties:
-                  bar_name:
-                    description: The name of the bar
-                    type: string
-                  drink_name:
-                    description: The name of the drink (Karhu, Koff etc.)
-                    type: string
-                  drink_size:
-                    description: The size of the drink in liters
-                    minimum: 0
-                    type: number
-                  price:
-                    description: The price of the drink in euros
-                    minimum: 0
-                    type: number
-                required:
-                - bar_name
-                - drink_name
-                - drink_size
-                - price
-                type: object
+                $ref: '#/components/schemas/Tapdrink'
               title: Edit this tapdrink
             self:
               href: /api/bars/Ilona/tapdrinks/Newcastle/0,33/
@@ -53,5 +34,5 @@ responses:
           drink_size: 0,33
           drink_type: Beer
           price: 5.35
- '404':
+  '404':
     description: The bar was not found
