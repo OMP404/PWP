@@ -1,0 +1,23 @@
+parameters:
+  - $ref: '#/components/parameters/bar'
+description: Replace bar's basic data with new values
+requestBody:
+  description: JSON document that contains new basic data for the bar
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Bar'
+      example:
+        name: Test pub
+        model: Test street 1c
+responses:
+  '204':
+    description: The bar's attributes were updated successfully
+  '400':
+    description: The request body was not valid
+  '404':
+    description: The bar was not found
+  '415':
+    description: Wrong media type was used
+  '500':
+    description: A database error

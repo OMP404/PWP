@@ -1,0 +1,35 @@
+parameters:
+  - $ref: '#/components/parameters/bar'
+  - $ref: '#/components/parameters/cocktail_name'
+description: Get details of one cocktail in the selected bar
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            almeta:delete-tapdrink:
+              href: /api/bars/Ilona/cocktails/Screwdriver/
+              method: DELETE
+              title: Delete this cocktail
+            collection:
+              href: /api/bars/Ilona/cocktails/
+            edit-cocktail:
+              encoding: json
+              href: /api/bars/Ilona/cocktails/Screwdriver/
+              method: PUT
+              schema:
+                $ref: '#/components/schemas/Cocktail'
+              title: Edit this cocktail
+            self:
+              href: /api/bars/Ilona/cocktails/Screwdriver/
+          '@namespaces':
+            almeta:
+              name: /alcoholmeta/link-relations/
+            profile:
+              name: /profiles/cocktail
+          bar_name: Ilona
+          cocktail_name: Screwdriver
+          price: 6.0
+  '404':
+    description: The bar was not found

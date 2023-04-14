@@ -1,0 +1,10 @@
+parameters:
+  - $ref: '#/components/parameters/bar'
+  - $ref: '#/components/parameters/drink_name'
+  - $ref: '#/components/parameters/drink_size'
+description: Delete the selected tapdrink
+responses:
+  '204':
+    description: The tapdrink's was successfully deleted
+  '404':
+    description: The tapdrink was not found

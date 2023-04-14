@@ -1,0 +1,8 @@
+parameters:
+  - $ref: '#/components/parameters/bar'
+description: Delete the selected bar
+responses:
+  '204':
+    description: The bar's was successfully deleted
+  '404':
+    description: The bar was not found

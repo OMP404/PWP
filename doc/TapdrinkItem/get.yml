@@ -1,0 +1,38 @@
+parameters:
+  - $ref: '#/components/parameters/bar'
+  - $ref: '#/components/parameters/drink_name'
+  - $ref: '#/components/parameters/drink_size'
+description: Get details of one cocktail in the selected bar
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            almeta:delete-tapdrink:
+              href: /api/bars/Ilona/tapdrinks/Newcastle/0,33/
+              method: DELETE
+              title: Delete this tapdrink
+            collection:
+              href: /api/bars/Ilona/tapdrinks/
+            edit-tapdrink:
+              encoding: json
+              href: /api/bars/Ilona/tapdrinks/Newcastle/0,33/
+              method: PUT
+              schema:
+                $ref: '#/components/schemas/Tapdrink'
+              title: Edit this tapdrink
+            self:
+              href: /api/bars/Ilona/tapdrinks/Newcastle/0,33/
+          '@namespaces':
+            almeta:
+              name: /alcoholmeta/link-relations/
+            profile:
+              name: /profiles/tapdrink
+          bar_name: Ilona
+          drink_name: Newcastle
+          drink_size: 0,33
+          drink_type: Beer
+          price: 5.35
+  '404':
+    description: The bar was not found

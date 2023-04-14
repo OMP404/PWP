@@ -1,0 +1,24 @@
+description: Create a new bar
+requestBody:
+  description: JSON document that contains basic data for a new bar
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Bar'
+      example:
+        name: Test pub
+        address: Test street 1c
+responses:
+  '201':
+    description: The bar was created successfully
+    headers:
+      Location: 
+        description: URI of the new bar
+        schema: 
+          type: string
+  '400':
+    description: The request body was not valid
+  '415':
+    description: Wrong media type was used
+  '500':
+    description: A database error
