@@ -1,13 +1,16 @@
 import json
-from flask import Flask, Response, request, send_from_directory
+import os
+
+from flasgger import Swagger
+from flask import Flask, Response, jsonify, request, send_from_directory
+from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 from jsonschema import ValidationError, validate
 from sqlalchemy import UniqueConstraint, event
 from sqlalchemy.engine import Engine
-from sqlalchemy import event, UniqueConstraint
 from sqlalchemy.exc import IntegrityError
 from werkzeug.routing import BaseConverter
-from flasgger import Swagger
+from werkzeug.exceptions import BadRequest
 
 app = Flask(__name__, static_folder="static")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Database/bar.db"
@@ -307,8 +310,8 @@ class InventoryBuilder(MasonBuilder):
                 bar=bar,
                 drink_name=drink_name,
                 drink_size=drink_size),
-                method="DELETE",
-                title="Delete this tapdrink"
+            method="DELETE",
+            title="Delete this tapdrink"
         )
 
     def add_control_add_tapdrink(self, bar):
@@ -390,9 +393,10 @@ class BarCollection(Resource):
         return Response(json.dumps(body), 200, mimetype=MASON)
 
     def post(self):
-        if not request.json:
+        try:
+            jsonify(request.get_json())
+        except BadRequest:
             return create_error_response(415, "Unsupported media type", "Use JSON")
-
         try:
             validate(request.json, Bar.json_schema())
         except ValidationError as e:
@@ -414,9 +418,12 @@ class BarCollection(Resource):
 
         return Response(status=201, headers={'Location': api.url_for(BarItem, bar=bar)})
 
+
 class BarItem(Resource):
 
     def get(self, bar):
+        if type(bar) == Response:  # if converter returns error
+            return bar
         body = InventoryBuilder(bar.serialize())
         body.add_control("self", href=api.url_for(BarItem, bar=bar))
         body.add_control_edit_bar(bar)
@@ -432,12 +439,16 @@ class BarItem(Resource):
         return Response(json.dumps(body), 200, mimetype=MASON)
 
     def put(self, bar):
-        if not request.json:
+        try:
+            jsonify(request.get_json())
+        except BadRequest:
             return create_error_response(415, "Unsupported media type", "Use JSON")
         try:
             validate(request.json, Bar.json_schema())
         except ValidationError as e:
             return create_error_response(400, "Invalid JSON document", str(e))
+        if type(bar) == Response:
+            return create_error_response(404, "Not found", "No such bar")
 
         bar.deserialize(request.json)
 
@@ -450,6 +461,8 @@ class BarItem(Resource):
         return Response(status=204)
 
     def delete(self, bar):
+        if type(bar) == Response:
+            return bar
         db.session.delete(bar)
         db.session.commit()
         return Response(status=204)
@@ -485,8 +498,10 @@ class TapdrinkCollection(Resource):
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 
-    def post(self):
-        if not request.json:
+    def post(self, bar=None):
+        try:
+            jsonify(request.get_json())
+        except BadRequest:
             return create_error_response(415, "Unsupported media type", "Use JSON")
 
         try:
@@ -540,9 +555,10 @@ class TapdrinkItem(Resource):
         return Response(json.dumps(body), 200, mimetype=MASON)
 
     def put(self, bar, drink_name, drink_size):
-        if not request.json:
+        try:
+            jsonify(request.get_json())
+        except BadRequest:
             return create_error_response(415, "Unsupported media type", "Use JSON")
-
         try:
             validate(request.json, Tapdrink.json_schema())
         except ValidationError as e:
@@ -602,8 +618,10 @@ class CocktailCollection(Resource):
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 
-    def post(self):
-        if not request.json:
+    def post(self, bar=None):
+        try:
+            jsonify(request.get_json())
+        except BadRequest:
             return create_error_response(415, "Unsupported media type", "Use JSON")
 
         try:
@@ -622,7 +640,7 @@ class CocktailCollection(Resource):
         header = {
             'Location': api.url_for(
                 CocktailItem,
-                bar_name=cocktail.bar_name,
+                bar=cocktail.bar,
                 cocktail_name=cocktail.cocktail_name)}
 
         return Response(status=201, headers=header)
@@ -652,11 +670,13 @@ class CocktailItem(Resource):
             cocktail.cocktail_name)
         body.add_control("collection", href=api.url_for(
             CocktailCollection, bar=bar))
-        
+
         return Response(json.dumps(body), 200, mimetype=MASON)
 
     def put(self, bar, cocktail_name):
-        if not request.json:
+        try:
+            jsonify(request.get_json())
+        except BadRequest:
             return create_error_response(415, "Unsupported media type", "Use JSON")
 
         try:
@@ -681,6 +701,8 @@ class CocktailItem(Resource):
     def delete(self, bar, cocktail_name):
         cocktail = Cocktail.query.filter_by(
             bar_name=bar.name, cocktail_name=cocktail_name).first()
+        if not cocktail:
+            return create_error_response(404, "Cocktail not found")
         db.session.delete(cocktail)
         db.session.commit()
         return Response(status=204)
@@ -688,12 +710,14 @@ class CocktailItem(Resource):
 
 @app.route("/profiles/<resource>/")
 def send_profile_html(resource):
-    return send_from_directory(app.static_folder, "{}.html".format(resource))
+    return send_from_directory(os.path.join(app.static_folder, "profiles"), f"{resource}.html")
 
 
 @app.route("/almeta/link-relations/")
 def send_link_relations_html():
-    return send_from_directory(app.static_folder, "links-relations.html")
+    returnable = send_from_directory(os.path.join(
+        app.static_folder, "link-relations"), "link-relations.html")
+    return send_from_directory(os.path.join(app.static_folder, "link-relations"), "link-relations.html")
 
 
 class BarConverter(BaseConverter):
@@ -716,4 +740,5 @@ api.add_resource(
     TapdrinkItem,
     "/api/bars/<bar:bar>/tapdrinks/<drink_name>/<drink_size>/")
 api.add_resource(CocktailCollection, "/api/bars/<bar:bar>/cocktails/")
-api.add_resource(CocktailItem, "/api/bars/<bar:bar>/cocktails/<cocktail_name>/")
+api.add_resource(
+    CocktailItem, "/api/bars/<bar:bar>/cocktails/<cocktail_name>/")

@@ -116,8 +116,8 @@ def test_barcollection_get(db_handle, client_handle):
     db_handle.session.commit()
     response = client_handle.get('/api/bars/')
     assert response.status_code == 200
-    assert response.json['bars'][0]['name'] == 'Test-bar'
-    assert response.json['bars'][0]['address'] == 'Test-address'
+    assert response.json['items'][0]['name'] == 'Test-bar'
+    assert response.json['items'][0]['address'] == 'Test-address'
 
 
 def test_barcollection_post(db_handle, client_handle):
@@ -137,8 +137,8 @@ def test_barcollection_post(db_handle, client_handle):
     assert response.status_code == 201
     get_response = client_handle.get('/api/bars/')
     assert get_response.status_code == 200
-    assert get_response.json['bars'][0]['name'] == 'Test-bar'
-    assert get_response.json['bars'][0]['address'] == 'Test-address'
+    assert get_response.json['items'][0]['name'] == 'Test-bar'
+    assert get_response.json['items'][0]['address'] == 'Test-address'
 
 
 def test_baritem_get(db_handle, client_handle):
@@ -229,11 +229,11 @@ def test_tapdrinkcollection_get(db_handle, client_handle):
     db_handle.session.commit()
     response = client_handle.get('/api/bars/Test-bar/tapdrinks/')
     assert response.status_code == 200
-    assert response.json['tapdrinks'][0]['bar_name'] == 'Test-bar'
-    assert response.json['tapdrinks'][0]['drink_type'] == 'Test-type'
-    assert response.json['tapdrinks'][0]['drink_name'] == 'Test-tapdrink'
-    assert response.json['tapdrinks'][0]['drink_size'] == 0.5
-    assert response.json['tapdrinks'][0]['price'] == 1.0
+    assert response.json['items'][0]['bar_name'] == 'Test-bar'
+    assert response.json['items'][0]['drink_type'] == 'Test-type'
+    assert response.json['items'][0]['drink_name'] == 'Test-tapdrink'
+    assert response.json['items'][0]['drink_size'] == 0.5
+    assert response.json['items'][0]['price'] == 1.0
 
 
 def test_tapdrinkcollection_post(db_handle, client_handle):
@@ -252,16 +252,20 @@ def test_tapdrinkcollection_post(db_handle, client_handle):
     db_handle.session.commit()
     tapdrink = _create_tapdrink()
     # tapdrink.bar = bar
-    response = client_handle.post(f'/api/bars/{bar.name}/tapdrinks/', json={'bar_name': f'{bar.name}', 'drink_type': f'{tapdrink.drink_type}',
-                                  'drink_name': f'{tapdrink.drink_name}', 'drink_size': tapdrink.drink_size, 'price': tapdrink.price})
+    response = client_handle.post(f'/api/bars/{bar.name}/tapdrinks/',
+                                  json={'bar_name': bar.name,
+                                        'drink_type': tapdrink.drink_type,
+                                        'drink_name': tapdrink.drink_name,
+                                        'drink_size': tapdrink.drink_size,
+                                        'price': tapdrink.price})
     assert response.status_code == 201
     get_response = client_handle.get('/api/bars/Test-bar/tapdrinks/')
     assert get_response.status_code == 200
-    assert get_response.json['tapdrinks'][0]['bar_name'] == 'Test-bar'
-    assert get_response.json['tapdrinks'][0]['drink_type'] == 'Test-type'
-    assert get_response.json['tapdrinks'][0]['drink_name'] == 'Test-tapdrink'
-    assert get_response.json['tapdrinks'][0]['drink_size'] == 0.5
-    assert get_response.json['tapdrinks'][0]['price'] == 1.0
+    assert get_response.json['items'][0]['bar_name'] == 'Test-bar'
+    assert get_response.json['items'][0]['drink_type'] == 'Test-type'
+    assert get_response.json['items'][0]['drink_name'] == 'Test-tapdrink'
+    assert get_response.json['items'][0]['drink_size'] == 0.5
+    assert get_response.json['items'][0]['price'] == 1.0
 
 
 def test_tapdrinkitem_get(db_handle, client_handle):
@@ -376,9 +380,9 @@ def test_cocktailcollection_get(db_handle, client_handle):
     response = client_handle.get(
         '/api/bars/Test-bar/cocktails/')
     assert response.status_code == 200
-    assert response.json['cocktails'][0]['bar_name'] == 'Test-bar'
-    assert response.json['cocktails'][0]['cocktail_name'] == 'Test-cocktail'
-    assert response.json['cocktails'][0]['price'] == 1.0
+    assert response.json['items'][0]['bar_name'] == 'Test-bar'
+    assert response.json['items'][0]['cocktail_name'] == 'Test-cocktail'
+    assert response.json['items'][0]['price'] == 1.0
 
 
 def test_cocktailcollection_post(db_handle, client_handle):
@@ -398,7 +402,7 @@ def test_cocktailcollection_post(db_handle, client_handle):
     cocktail = _create_cocktail()
     response = client_handle.post(
         '/api/bars/Test-bar/cocktails/',
-        json={'bar_name': f"{bar.name}", 'cocktail_name': f'{cocktail.cocktail_name}', 'price': cocktail.price})
+        json={'bar_name': bar.name, 'cocktail_name': cocktail.cocktail_name, 'price': cocktail.price})
     assert response.status_code == 201
     new_response = client_handle.get(
         '/api/bars/Test-bar/cocktails/Test-cocktail/')

@@ -1,0 +1,50 @@
+{
+    "collection": {
+        "description": "A link to the collection itself",
+        "href": [
+            "/api/bars/",
+            "/api/bars/<bar:bar>/tapdrinks/",
+            "/api/bars/<bar:bar>/cocktails/"
+        ]
+    },
+    "almeta:add-bar": {
+        "description": "Add a bar to the collection",
+        "href": "/api/bars/"
+    },
+    "almeta:delete-bar": {
+        "description": "Delete a bar from the collection",
+        "href": "/api/bars/<bar:bar>/"
+    },
+    "almeta:edit-bar": {
+        "description": "Edit the information of a bar in the collection",
+        "href": "/api/bars/<bar:bar>/"
+    },
+    "almeta:in-bar": {
+        "description": "A link to the bar where the drink is sold",
+        "href": "/api/bars/<bar:bar>/"
+    },
+    "almeta:delete-tapdrink": {
+        "description": "Delete a tapdrink from the collection",
+        "href": "/api/bars/<bar:bar>/tapdrinks/<drink_name>/<drink_size>/"
+    },
+    "almeta:add-tapdrink": {
+        "description": "Add a tapdrink to the collection",
+        "href": "/api/bars/<bar:bar>/tapdrinks/"
+    },
+    "edit-tapdrink": {
+        "description": "Edit the information of a tapdrink in the collection",
+        "href": "/api/bars/<bar:bar>/tapdrinks/<drink_name>/<drink_size>/"
+    },
+    "almeta:delete-cocktail": {
+        "description": "Delete a cocktail from the collection",
+        "href": "/api/bars/<bar:bar>/cocktails/<cocktail_name>/"
+    },
+    "almeta:add-cocktail": {
+        "description": "Add a cocktail to the collection",
+        "href": "/api/bars/<bar:bar>/cocktails/"
+    },
+    "edit-cocktail": {
+        "description": "Edit the information of a cocktail in the collection",
+        "href": "/api/bars/<bar:bar>/cocktails/<cocktail_name>/"
+    }
+}
