@@ -416,8 +416,6 @@ class BarCollection(Resource):
                 'Location': api.url_for(
                     BarItem, bar=bar)})
 
-        return Response(status=201, headers={'Location': api.url_for(BarItem, bar=bar)})
-
 
 class BarItem(Resource):
 
