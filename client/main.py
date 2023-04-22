@@ -93,7 +93,7 @@ class App():
         autoclose_label = tk.CTkLabel(
             popup, text="This window will close in 3 seconds...")
         autoclose_label.pack(fill=tk.X, pady=20, padx=10)
-        popup.after(3000, popup.destroy)  # destroy after 4 seconds
+        popup.after(3000, popup.destroy)  # destroy after 3 seconds
 
 
 class MainView(tk.CTkFrame, App):
@@ -247,6 +247,7 @@ class BarView(tk.CTkFrame, App):
         self.tapdrinks = []
         self.cocktails = []
         self.buttonframes = {}
+        self.add_button = None
         self.get_bar_info()
         # self.textbox = tk.CTkTextbox(self, font=("Roboto", 16))
         # self.textbox.pack(fill=tk.BOTH, expand=True)
@@ -294,7 +295,7 @@ class BarView(tk.CTkFrame, App):
         drink_infobox.grid(row=0, column=0, padx=5,
                            pady=5, sticky="we", columnspan=2)
         drink_infobox.insert(
-            tkinter.END, f"{tapdrink['drink_type']}, {tapdrink['drink_name']} - {tapdrink['price']}€")
+            tkinter.END, f"{tapdrink['drink_type']}, {tapdrink['drink_name']}, {tapdrink['drink_size']} - {tapdrink['price']}€")
         drink_infobox.configure(state=tk.NORMAL if edit else tk.DISABLED)
 
         button_edit = tk.CTkButton(
@@ -330,8 +331,9 @@ class BarView(tk.CTkFrame, App):
                            sticky="we")
 
     def create_add_button(self):
-        add_button = tk.CTkButton(self, text="Add bar", command=self.add_item)
-        add_button.pack(pady=5, anchor="n")
+        self.add_button = tk.CTkButton(
+            self, text="Add bar", command=self.add_item)
+        self.add_button.pack(pady=5, anchor="n")
 
     def add_item(self):
         # TODO
@@ -345,13 +347,17 @@ class BarView(tk.CTkFrame, App):
         self.buttonframes[f"{tapdrink['bar_name']}_{old_name}"].destroy(
         )
         del self.buttonframes[f"{tapdrink['bar_name']}_{old_name}"]
+        self.add_button.destroy()
         self.create_button_frame_tapdrink(tapdrink)
+        self.create_add_button()
 
     def update_cocktail(self, cocktail, old_name):
         self.buttonframes[f"{cocktail['bar_name']}_{old_name}"].destroy(
         )
         del self.buttonframes[f"{cocktail['bar_name']}_{old_name}"]
+        self.add_button.destroy()
         self.create_button_frame_cocktail(cocktail)
+        self.create_add_button()
 
     def delete_item(self, drink):
         '''Delete item from database'''
@@ -361,8 +367,8 @@ class BarView(tk.CTkFrame, App):
             self.delete_cocktail(drink)
 
     def delete_tapdrink(self, tapdrink):
-        # TODO fetch url and use it in request (instead of hard coding url)
-        response = requests.delete(f"{API_URL}bars/{tapdrink['bar_name']}/tapdrinks/{tapdrink['drink_name']}/{tapdrink['drink_size']}/",
+        url = tapdrink["@controls"]["self"]["href"]
+        response = requests.delete(BASE_URL + url,
                                    timeout=5)
         if response.status_code == 204:
             print("Success")
@@ -377,7 +383,8 @@ class BarView(tk.CTkFrame, App):
             print("Error")
 
     def delete_cocktail(self, cocktail):
-        response = requests.delete(f"{API_URL}bars/{cocktail['bar_name']}/cocktails/{cocktail['cocktail_name']}/",
+        url = cocktail["@controls"]["self"]["href"]
+        response = requests.delete(BASE_URL + url,
                                    timeout=5)
         if response.status_code == 204:
             print("Success")
@@ -457,7 +464,7 @@ class EditDrinkView(tk.CTkFrame, App):
         if self.size_entry.get() == "":
             size = self.drink["drink_size"]
         else:
-            size = self.size_entry.get()
+            size = float(self.size_entry.get())
             self.drink['drink_size'] = size
         if self.price_entry.get() == "":
             price = self.drink["price"]
@@ -480,6 +487,8 @@ class EditDrinkView(tk.CTkFrame, App):
             self.price_entry.delete(0, tkinter.END)
             self.bar_parent.update_tapdrink(self.drink, old_name)
             self.app.show_prev_frame(BarView)
+        else:
+            self.app.show_message_box("Error", "Drink could not be edited")
 
     def submit_edited_cocktail(self):
         old_name = self.drink["cocktail_name"]
@@ -506,6 +515,9 @@ class EditDrinkView(tk.CTkFrame, App):
             self.bar_parent.update_cocktail(self.drink, old_name)
             self.app.root.latest_frames.pop()
             self.app.show_prev_frame(BarView)
+
+        else:
+            self.app.show_message_box("Error", "Cocktail could not be edited")
 
 
 if __name__ == "__main__":
