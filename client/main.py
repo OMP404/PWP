@@ -4,8 +4,8 @@ import tkinter
 import requests
 
 
-API_URL = "http://localhost:5000/api/"
 BASE_URL = "http://localhost:5000"
+API_URL = f"{BASE_URL}/api/"
 HEADERS = {"Content-Type": "application/json"}
 
 
