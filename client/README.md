@@ -1,6 +1,6 @@
 # Oulu Bars API Client
 
-Foobar is a Python library for dealing with word pluralization.
+Simple Python GUI Client for the Oulu Bars API
 
 ## Installation
 
