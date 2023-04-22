@@ -3,6 +3,7 @@ import customtkinter as tk
 import tkinter
 import requests
 
+
 API_URL = "http://localhost:5000/api/"
 BASE_URL = "http://localhost:5000"
 HEADERS = {"Content-Type": "application/json"}
@@ -90,10 +91,48 @@ class App():
         text.pack(fill=tk.X, pady=5, padx=10)
         okbutton = tk.CTkButton(popup, text="OK", command=popup.destroy)
         okbutton.pack(fill=tk.X, pady=5, padx=20)
-        autoclose_label = tk.CTkLabel(
-            popup, text="This window will close in 3 seconds...")
-        autoclose_label.pack(fill=tk.X, pady=20, padx=10)
-        popup.after(3000, popup.destroy)  # destroy after 3 seconds
+
+    def show_error_box(self, title, error, reason):
+        popup = tk.CTkToplevel(self.root, takefocus=True)
+        popup.title = "Error"
+        screen_width = int(self.root.winfo_width()/2)
+        screen_height = int(self.root.winfo_height()*0.75)
+        screen_pos_x = self.root.winfo_x()
+        screen_pos_y = self.root.winfo_y()
+        pos_x = screen_pos_x + int(screen_width/2)
+        pos_y = screen_pos_y + int(screen_height*0.25)
+        popup.geometry(
+            f"{screen_width}x{screen_height}+{pos_x}+{pos_y}")
+        popup.grab_set()
+        frame_title = tk.CTkLabel(popup, text=title, font=("Arial", 20))
+        frame_title.pack(fill=tk.X, pady=5, padx=10)
+        error_label = tk.CTkLabel(popup, text="Error:", font=("Arial", 14))
+        error_label.pack(padx=10, anchor=tk.W)
+        text_error = tk.CTkLabel(
+            popup, text=error, font=("Arial", 14), fg_color="black", corner_radius=5, justify=tk.LEFT)
+        text_error.pack(fill=tk.X, pady=5, padx=20,
+                        ipadx=2, ipady=10, anchor=tk.W)
+        reason_label = tk.CTkLabel(popup, text="Reason:", font=("Arial", 14))
+        reason_label.pack(padx=10, anchor=tk.W)
+        text_reason = tk.CTkLabel(
+            popup, text=reason, font=("Arial", 14), fg_color="black", corner_radius=5, justify=tk.LEFT)
+        text_reason.pack(fill=tk.X, pady=5, padx=20,
+                         ipadx=2, ipady=10, anchor=tk.W)
+        okbutton = tk.CTkButton(popup, text="OK", command=popup.destroy)
+        okbutton.pack(fill=tk.X, pady=5, padx=20)
+        # autoclose_label = tk.CTkLabel(
+        #     popup, text="This window will close in 3 seconds...")
+        # autoclose_label.pack(fill=tk.X, pady=20, padx=10)
+        # popup.after(3000, popup.destroy)  # destroy after 3 seconds
+
+    def load_error_message(self, response):
+        if response.json():
+            errors = response.json()['@error']
+        else:
+            errors = json.loads(response.text)['@error']
+        response_error = errors['@message']
+        reasons = errors['@messages']
+        return response_error, reasons[0]
 
 
 class MainView(tk.CTkFrame, App):
@@ -148,8 +187,8 @@ class AddBarView(tk.CTkFrame, App):
         self.cancel_button.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
 
     def submit_bar(self):
-        name = self.name_entry.get()
-        address = self.address_entry.get()
+        name = self.name_entry.get().strip()
+        address = self.address_entry.get().strip()
         if name and address:
             data = {"name": name, "address": address}
             response = requests.post(
@@ -451,25 +490,39 @@ class EditDrinkView(tk.CTkFrame, App):
 
     def submit_edited_drink(self):
         old_name = self.drink["drink_name"]
-        if self.drink_type_entry.get() == "":
+        drink_type_entry = self.drink_type_entry.get().strip()
+        if drink_type_entry == "":
             drink_type = self.drink["drink_type"]
         else:
-            drink_type = self.drink_type_entry.get()
+            drink_type = drink_type_entry
             self.drink['drink_type'] = drink_type
-        if self.name_entry.get() == "":
+        name_entry = self.name_entry.get().strip()
+        if name_entry == "":
             name = self.drink["drink_name"]
         else:
-            name = self.name_entry.get()
+            name = name_entry
             self.drink['drink_name'] = name
-        if self.size_entry.get() == "":
+        size_entry = self.size_entry.get().strip()
+        if size_entry == "":
             size = self.drink["drink_size"]
         else:
-            size = float(self.size_entry.get())
+            try:
+                size = float(size_entry)
+            except ValueError:
+                self.app.show_message_box(
+                    "Input Error", "Size must be a number")
+                return
             self.drink['drink_size'] = size
-        if self.price_entry.get() == "":
+        price_entry = self.price_entry.get().strip()
+        if price_entry == "":
             price = self.drink["price"]
         else:
-            price = self.price_entry.get()
+            try:
+                price = float(price_entry)
+            except ValueError:
+                self.app.show_message_box(
+                    "Input Error", "Price must be a number")
+                return
             self.drink['price'] = price
         url = self.drink["@controls"]["self"]["href"]
         response = requests.put(BASE_URL + url,
@@ -488,20 +541,30 @@ class EditDrinkView(tk.CTkFrame, App):
             self.bar_parent.update_tapdrink(self.drink, old_name)
             self.app.show_prev_frame(BarView)
         else:
-            self.app.show_message_box("Error", "Drink could not be edited")
+            error, reason = self.app.load_error_message(response)
+            self.app.show_message_box(
+                f"Error {response.status_code}", error, reason)
 
     def submit_edited_cocktail(self):
         old_name = self.drink["cocktail_name"]
-        if self.name_entry.get() == "":
+        name_entry = self.name_entry.get().strip()
+        if name_entry == "":
             name = self.drink["cocktail_name"]
         else:
-            name = self.name_entry.get()
+            name = name_entry
             self.drink['cocktail_name'] = name
-        if self.price_entry.get() == "":
+        price_entry = self.price_entry.get().strip()
+        if price_entry == "":
             price = self.drink["price"]
         else:
-            price = self.price_entry.get()
+            try:
+                price = float(price_entry)
+            except ValueError:
+                self.app.show_message_box(
+                    "Error", "Price must be a number")
+                return
             self.drink['price'] = price
+
         url = self.drink["@controls"]["self"]["href"]
         response = requests.put(BASE_URL + url,
                                 json={"bar_name": self.bar,
@@ -517,7 +580,9 @@ class EditDrinkView(tk.CTkFrame, App):
             self.app.show_prev_frame(BarView)
 
         else:
-            self.app.show_message_box("Error", "Cocktail could not be edited")
+            error, reason = self.app.load_error_message(response)
+            self.app.show_message_box(
+                f"Error {response.status_code}", error, reason)
 
 
 if __name__ == "__main__":
