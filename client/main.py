@@ -1,8 +1,8 @@
 import json
-import customtkinter as tk
 import tkinter
-import requests
 
+import customtkinter as tk
+import requests
 
 BASE_URL = "http://localhost:5000"
 API_URL = f"{BASE_URL}/api/"
@@ -10,13 +10,24 @@ HEADERS = {"Content-Type": "application/json"}
 
 
 class RootApp(tk.CTk):
+    """
+    This class represents the root application window for the Oulu Bars API. 
+    It inherits from the customtkinter.CTk class.
+    """
+
     def __init__(self):
+        '''
+        Initializes the root application window, sets the title, 
+        geometry and minimum size of the window. 
+        Also creates the top bar and container for all frames.
+        '''
         super().__init__()
 
         self.title("Oulu Bars API")
         self.geometry("900x600")
         self.minsize(800, 500)
         self.latest_frames = []
+
         # top bar
         self.top_bar = TopBar(self)
 
@@ -28,7 +39,18 @@ class RootApp(tk.CTk):
 
 
 class TopBar(tk.CTkFrame):
+    """
+    This class represents the top bar of the application. 
+    It inherits from the customtkinter.CTkFrame class.
+    """
+
     def __init__(self, parent):
+        '''
+        Initializes the top bar and creates the back button for it.
+
+        Args:
+        - parent (tk.CTk): The parent (main) screen for the top bar.
+        '''
         super().__init__(parent, height=50, fg_color="#2c3e50", corner_radius=0)
         self.parent = parent
         self.pack(fill=tk.X, side=tk.TOP)
@@ -37,6 +59,9 @@ class TopBar(tk.CTkFrame):
         self.back_button.pack(side=tk.LEFT, padx=10, pady=5)
 
     def back(self):
+        """
+        Returns to the previous frame of the application.
+        """
         if len(self.parent.latest_frames) > 1:
             self.parent.latest_frames.pop()
             app.show_prev_frame(self.parent.latest_frames[-1])
@@ -45,36 +70,82 @@ class TopBar(tk.CTkFrame):
 
 
 class App():
+    """
+    This class represents the application. 
+    It manages what is to be shown on the frame.
+    """
+
     def __init__(self, container, root):
+        """
+        Initializes the App object.
+
+        Args:
+        - container: the container for the frames.
+        - root: the root widget of the application.
+        """
         self.container = container
         self.root = root
         self.frames = {}
 
     def init_frames(self):
+        """
+        Initializes the frames of the application.
+        """
         frames = [MainView, BarsListView, AddBarView]
         for frame in frames:
             self.frames[frame] = frame(self.container, self)
         self.show_frame(MainView)
 
     def show_bar(self, bar):
+        """
+        Creates and shows a BarView frame for a given bar.
+
+        Args:
+        - bar: the bar object to display.
+        """
         self.frames[BarView] = BarView(self.container, self, bar)
         self.show_frame(BarView)
 
     def show_edit_drink_frame(self, drink):
+        """
+        Creates and shows the EditDrinkView frame for a given drink.
+
+        Args:
+        - drink: the drink object to edit.
+        """
         self.frames[EditDrinkView] = EditDrinkView(
             self.container, self, drink, self.frames[BarView])
         self.show_frame(EditDrinkView)
 
     def show_frame(self, frame):
+        """
+        Shows a given frame and adds it to "latest_frames" list (=stack).
+
+        Args:
+        - frame: the frame to show.
+        """
         self.root.latest_frames.append(frame)
         new_frame = self.frames[frame]
         new_frame.tkraise()
 
     def show_prev_frame(self, frame):
+        """
+        Shows the previous frame.
+
+        Args:
+        - frame: the previous frame to show.
+        """
         new_frame = self.frames[frame]
         new_frame.tkraise()
 
     def show_message_box(self, title, message):
+        """
+        Shows a popup window with a given title and message.
+
+        Args:
+        - title: the title of the popup window.
+        - message: the message to display.
+        """
         popup = tk.CTkToplevel(self.root, takefocus=True)
         screen_width = int(self.root.winfo_width()/2)
         screen_height = int(self.root.winfo_height()/2)
@@ -93,6 +164,15 @@ class App():
         okbutton.pack(fill=tk.X, pady=5, padx=20)
 
     def show_error_box(self, title, error, reason):
+        """
+        Shows a popup window with a title, error and reason,
+        with more detailed information boxes for the error and reason.
+
+        Args:
+        - title: the title of the popup window.
+        - error: the error to display.
+        - reason: the reason for the error.
+        """
         popup = tk.CTkToplevel(self.root, takefocus=True)
         popup.title = "Error"
         screen_width = int(self.root.winfo_width()/2)
@@ -109,23 +189,31 @@ class App():
         error_label = tk.CTkLabel(popup, text="Error:", font=("Arial", 14))
         error_label.pack(padx=10, anchor=tk.W)
         text_error = tk.CTkLabel(
-            popup, text=error, font=("Arial", 14), fg_color="black", corner_radius=5, justify=tk.LEFT)
+            popup, text=error, font=("Arial", 14), fg_color="black",
+            corner_radius=5, justify=tk.LEFT)
         text_error.pack(fill=tk.X, pady=5, padx=20,
                         ipadx=2, ipady=10, anchor=tk.W)
         reason_label = tk.CTkLabel(popup, text="Reason:", font=("Arial", 14))
         reason_label.pack(padx=10, anchor=tk.W)
         text_reason = tk.CTkLabel(
-            popup, text=reason, font=("Arial", 14), fg_color="black", corner_radius=5, justify=tk.LEFT)
+            popup, text=reason, font=("Arial", 14), fg_color="black",
+            corner_radius=5, justify=tk.LEFT)
         text_reason.pack(fill=tk.X, pady=5, padx=20,
                          ipadx=2, ipady=10, anchor=tk.W)
         okbutton = tk.CTkButton(popup, text="OK", command=popup.destroy)
         okbutton.pack(fill=tk.X, pady=5, padx=20)
-        # autoclose_label = tk.CTkLabel(
-        #     popup, text="This window will close in 3 seconds...")
-        # autoclose_label.pack(fill=tk.X, pady=20, padx=10)
-        # popup.after(3000, popup.destroy)  # destroy after 3 seconds
 
     def load_error_message(self, response):
+        """
+        Gets the error message and reason from a given response.
+
+        Args:
+        - response: the response to get the error message and reason from.
+
+        Returns:
+        - response_error: the error message.
+        - reason: the reason for the error.
+        """
         if response.json():
             errors = response.json()['@error']
         else:
@@ -136,7 +224,18 @@ class App():
 
 
 class MainView(tk.CTkFrame, App):
+    """
+    This class represents the main "menu" of the application.
+    """
+
     def __init__(self, parent, app):
+        """
+        Initializes the main view with 2 buttons.
+
+        Args:
+        - parent: the parent (main frame) of the frame.
+        - app: the main application object.
+        """
         super().__init__(parent)
         self.parent = parent
         self.app = app
@@ -153,14 +252,31 @@ class MainView(tk.CTkFrame, App):
         self.add_bar_button.pack(fill=tk.X, pady=5, padx=10)
 
     def list_bars(self):
+        """
+        Changes the frame to the BarsListView.
+        """
         self.app.show_frame(BarsListView)
 
     def add_bar(self):
+        """
+        Changes the frame to the AddBarView.
+        """
         self.app.show_prev_frame(AddBarView)
 
 
 class AddBarView(tk.CTkFrame, App):
+    """
+    This class represents the frame for adding a bar.
+    """
+
     def __init__(self, parent, app):
+        """
+        Initializes the AddBarView with entry fields.
+
+        Args:
+        - parent: the parent (main frame) of the frame.
+        - app: the main application object.
+        """
         super().__init__(parent)
         self.app = app
         self.parent = parent
@@ -187,6 +303,9 @@ class AddBarView(tk.CTkFrame, App):
         self.cancel_button.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
 
     def submit_bar(self):
+        """
+        For submitting a new bar with the API.
+        """
         name = self.name_entry.get().strip()
         address = self.address_entry.get().strip()
         if name and address:
@@ -205,11 +324,25 @@ class AddBarView(tk.CTkFrame, App):
                 "Error", "Name and address must be filled")
 
     def cancel_button_func(self):
+        """
+        For canceling the adding of a new bar.
+        """
         self.app.show_prev_frame(MainView)
 
 
 class BarsListView(tk.CTkFrame, App):
+    """
+    This class represents the frame for listing bars.
+    """
+
     def __init__(self, parent, app):
+        """
+        Initializes the BarsListView with a list of bars.
+
+        Args:
+        - parent: the parent (main frame) of the frame.
+        - app: the main application object.
+        """
         super().__init__(parent)
         self.parent = parent
         self.app = app
@@ -244,15 +377,18 @@ class BarsListView(tk.CTkFrame, App):
             bar_info_box.grid(row=0, column=0, padx=5,
                               pady=5, sticky="we", columnspan=2)
             buttons[f"{bar['name']}_button"] = tk.CTkButton(
-                self.containers[f"{bar['name']}_container"], text="Show bar", command=lambda bar=bar: self.app.show_bar(bar))
+                self.containers[f"{bar['name']}_container"],
+                text="Show bar", command=lambda bar=bar: self.app.show_bar(bar))
             buttons[f"{bar['name']}_button"].grid(
                 row=0, column=2, padx=5, pady=5, sticky="we")
             buttons[f"{bar['name']}_edit_button"] = tk.CTkButton(
-                self.containers[f"{bar['name']}_container"], text="Edit bar", command=lambda bar=bar: self.edit_bar(bar))
+                self.containers[f"{bar['name']}_container"],
+                text="Edit bar", command=lambda bar=bar: self.edit_bar(bar))
             buttons[f"{bar['name']}_edit_button"].grid(
                 row=0, column=3, padx=5, pady=5, sticky="we")
             buttons[f"{bar['name']}_delete_button"] = tk.CTkButton(
-                self.containers[f"{bar['name']}_container"], text="Delete bar", command=lambda bar=bar: self.delete_bar(bar))
+                self.containers[f"{bar['name']}_container"],
+                text="Delete bar", command=lambda bar=bar: self.delete_bar(bar))
             buttons[f"{bar['name']}_delete_button"].grid(
                 row=0, column=4, padx=5, pady=5, sticky="we")
 
@@ -262,7 +398,6 @@ class BarsListView(tk.CTkFrame, App):
     def delete_bar(self, bar):
         url = bar['@controls']['self']['href']
         response = requests.delete(BASE_URL + url, timeout=5)
-        # FIXME gives 404 for some bar names (does so with # in bar name)
         if response.status_code == 204:
             self.app.show_message_box("Success", "Bar deleted")
             for listbar in self.bars:
@@ -330,30 +465,40 @@ class BarView(tk.CTkFrame, App):
             0, weight=1)
         # create a grid with 3 columns
         drink_infobox = tk.CTkTextbox(
-            self.buttonframes[f"{tapdrink['bar_name']}_{tapdrink['drink_name']}"], height=8, activate_scrollbars=False)
+            self.buttonframes[f"{tapdrink['bar_name']}_{tapdrink['drink_name']}"],
+            height=8, activate_scrollbars=False)
         drink_infobox.grid(row=0, column=0, padx=5,
                            pady=5, sticky="we", columnspan=2)
         drink_infobox.insert(
-            tkinter.END, f"{tapdrink['drink_type']}, {tapdrink['drink_name']}, {tapdrink['drink_size']} - {tapdrink['price']}€")
+            tkinter.END,
+            f"{tapdrink['drink_type']}, {tapdrink['drink_name']}, \
+            {tapdrink['drink_size']} - {tapdrink['price']}€")
         drink_infobox.configure(state=tk.NORMAL if edit else tk.DISABLED)
 
         button_edit = tk.CTkButton(
-            self.buttonframes[f"{tapdrink['bar_name']}_{tapdrink['drink_name']}"], text="Edit", command=lambda tapdrink=tapdrink: self.edit_item(tapdrink), width=100)
+            self.buttonframes[f"{tapdrink['bar_name']}_{tapdrink['drink_name']}"],
+            text="Edit",
+            command=lambda tapdrink=tapdrink: self.edit_item(tapdrink),
+            width=100)
         button_delete = tk.CTkButton(
-            self.buttonframes[f"{tapdrink['bar_name']}_{tapdrink['drink_name']}"], text="Delete", command=lambda tapdrink=tapdrink: self.delete_item(tapdrink), width=100)
+            self.buttonframes[f"{tapdrink['bar_name']}_{tapdrink['drink_name']}"],
+            text="Delete",
+            command=lambda tapdrink=tapdrink: self.delete_item(tapdrink),
+            width=100)
         button_edit.grid(row=0, column=2, padx=5, pady=5, sticky="we")
         button_delete.grid(row=0, column=3, padx=5, pady=5, sticky="we")
 
     def create_button_frame_cocktail(self, cocktail, edit=False):
-        self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"] = tk.CTkFrame(
-            self, corner_radius=0)
+        self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"] = \
+            tk.CTkFrame(self, corner_radius=0)
         self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"].pack(
             fill=tk.X, pady=1, padx=0)
-        self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"].grid_columnconfigure(
-            0, weight=1)
+        self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"]\
+            .grid_columnconfigure(0, weight=1)
         # create a grid with 3 columns
         drink_infobox = tk.CTkTextbox(
-            self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"], height=8, activate_scrollbars=False)
+            self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"],
+            height=8, activate_scrollbars=False)
         drink_infobox.grid(row=0, column=0, padx=5,
                            pady=5, sticky="we", columnspan=2)
         drink_infobox.insert(
@@ -361,13 +506,17 @@ class BarView(tk.CTkFrame, App):
         drink_infobox.configure(state=tk.NORMAL if edit else tk.DISABLED)
 
         button_edit = tk.CTkButton(
-            self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"], text="Edit", command=lambda cocktail=cocktail: self.edit_item(cocktail), width=100)
+            self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"],
+            text="Edit",
+            command=lambda cocktail=cocktail: self.edit_item(cocktail),
+            width=100)
         button_delete = tk.CTkButton(
-            self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"], text="Delete", command=lambda cocktail=cocktail: self.delete_item(cocktail), width=100)
-        button_edit.grid(row=0, column=2, padx=5, pady=5,
-                         sticky="we")
-        button_delete.grid(row=0, column=3, padx=5, pady=5,
-                           sticky="we")
+            self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"],
+            text="Delete",
+            command=lambda cocktail=cocktail: self.delete_item(cocktail),
+            width=100)
+        button_edit.grid(row=0, column=2, padx=5, pady=5, sticky="we")
+        button_delete.grid(row=0, column=3, padx=5, pady=5, sticky="we")
 
     def create_add_button(self):
         self.add_button = tk.CTkButton(
@@ -375,7 +524,6 @@ class BarView(tk.CTkFrame, App):
         self.add_button.pack(pady=5, anchor="n")
 
     def add_item(self):
-        # TODO
         self.app.show_message_box("Error", "Not implemented yet")
 
     def edit_item(self, drink):
@@ -430,8 +578,8 @@ class BarView(tk.CTkFrame, App):
             for list_cocktail in self.cocktails:
                 if list_cocktail["cocktail_name"] == cocktail["cocktail_name"]:
                     self.cocktails.remove(list_cocktail)
-                    self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"].destroy(
-                    )
+                    self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"]\
+                        .destroy()
                     del self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"]
                     break
         else:
@@ -478,7 +626,9 @@ class EditDrinkView(tk.CTkFrame, App):
         self.buttons_frame.pack(fill=tk.X, pady=5, expand=True)
         self.buttons_frame.grid_columnconfigure((0, 1), weight=1)
         self.submit_button = tk.CTkButton(
-            self.buttons_frame, text="Submit", command=self.submit_edited_drink if self.drinktype == "tapdrink" else self.submit_edited_cocktail)
+            self.buttons_frame, text="Submit",
+            command=self.submit_edited_drink if self.drinktype == "tapdrink"
+            else self.submit_edited_cocktail)
         self.submit_button.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
         self.cancel_button = tk.CTkButton(
             self.buttons_frame, text="Cancel", command=self.cancel_button_func)
