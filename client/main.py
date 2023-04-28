@@ -1,3 +1,7 @@
+"""
+Client for the Oulu Bars API.
+"""
+
 import json
 import tkinter
 
@@ -57,6 +61,7 @@ class TopBar(tk.CTkFrame):
         self.back_button = tk.CTkButton(
             self, text="Back", command=self.back, width=10)
         self.back_button.pack(side=tk.LEFT, padx=10, pady=5)
+        self.app = None
 
     def back(self):
         """
@@ -64,9 +69,9 @@ class TopBar(tk.CTkFrame):
         """
         if len(self.parent.latest_frames) > 1:
             self.parent.latest_frames.pop()
-            app.show_prev_frame(self.parent.latest_frames[-1])
+            self.app.show_prev_frame(self.parent.latest_frames[-1])
         else:
-            app.show_prev_frame(MainView)
+            self.app.show_prev_frame(MainView)
 
 
 class App():
@@ -163,6 +168,17 @@ class App():
         okbutton = tk.CTkButton(popup, text="OK", command=popup.destroy)
         okbutton.pack(fill=tk.X, pady=5, padx=20)
 
+    def show_error(self, response):
+        """
+        Uses class methods to show an error popup window.
+
+        Args:
+        - response: the response from the server.
+        """
+        title = f"Error: code {response.status_code}"
+        error, reason = self.load_error_message(response)
+        self.show_error_box(title, error, reason)
+
     def show_error_box(self, title, error, reason):
         """
         Shows a popup window with a title, error and reason,
@@ -214,10 +230,10 @@ class App():
         - response_error: the error message.
         - reason: the reason for the error.
         """
-        if response.json():
-            errors = response.json()['@error']
-        else:
+        try:
             errors = json.loads(response.text)['@error']
+        except json.JSONDecodeError:
+            return "Not found", "The requested resource was not found."
         response_error = errors['@message']
         reasons = errors['@messages']
         return response_error, reasons[0]
@@ -318,7 +334,7 @@ class AddBarView(tk.CTkFrame, App):
                 self.address_entry.delete(0, tkinter.END)
                 self.app.show_frame(MainView)
             else:
-                self.app.show_message_box("Error", "Failed to add bar")
+                self.app.show_error(response)
         else:
             self.app.show_message_box(
                 "Error", "Name and address must be filled")
@@ -335,7 +351,7 @@ class BarsListView(tk.CTkFrame, App):
     This class represents the frame for listing bars.
     """
 
-    def __init__(self, parent, app):
+    def __init__(self, parent: tk.CTkFrame, app: App):
         """
         Initializes the BarsListView with a list of bars.
 
@@ -354,13 +370,19 @@ class BarsListView(tk.CTkFrame, App):
         self.create_buttons()
 
     def get_bars(self):
+        """
+        Uses requests to get all available bars from the API.
+        """
         response = requests.get(f"{API_URL}bars/", timeout=5)
         if response.status_code == 200:
             self.bars = response.json()['items']
         else:
-            self.app.show_message_box("Error", "Failed to get bars")
+            self.app.show_error(response)
 
     def create_buttons(self):
+        """
+        Creates buttons for each bar (edit, delete, view)
+        """
         buttons = {}
         for bar in self.bars:
             self.containers[f"{bar['name']}_container"] = tk.CTkFrame(
@@ -393,9 +415,18 @@ class BarsListView(tk.CTkFrame, App):
                 row=0, column=4, padx=5, pady=5, sticky="we")
 
     def edit_bar(self, _):
+        """
+        Edits a bar, not implemented yet.
+        """
         self.app.show_message_box("Error", "Not implemented yet")
 
     def delete_bar(self, bar):
+        """
+        Deletes a bar from the database using the API.
+
+        Args:
+        - bar: the bar to be deleted.
+        """
         url = bar['@controls']['self']['href']
         response = requests.delete(BASE_URL + url, timeout=5)
         if response.status_code == 204:
@@ -407,11 +438,24 @@ class BarsListView(tk.CTkFrame, App):
                     del self.containers[f"{bar['name']}_container"]
                     break
         else:
-            self.app.show_message_box("Error", "Failed to delete bar")
+            self.app.show_error(response)
 
 
 class BarView(tk.CTkFrame, App):
-    def __init__(self, parent, app, bar=None, edit=False):
+    """
+    This class represents the frame for viewing a specific bar.
+    """
+
+    def __init__(self, parent: tk.CTkFrame, app: App, bar: dict = None, edit=False):
+        """
+        Initializes the BarView with a specific bar.
+
+        Args:
+        - parent: the parent (main frame) of the frame.
+        - app: the main application object.
+        - bar: the bar to be viewed.
+        - edit: whether the bar info fields should be editable.
+        """
         super().__init__(parent)
         self.parent = parent
         self.app = app
@@ -423,10 +467,11 @@ class BarView(tk.CTkFrame, App):
         self.buttonframes = {}
         self.add_button = None
         self.get_bar_info()
-        # self.textbox = tk.CTkTextbox(self, font=("Roboto", 16))
-        # self.textbox.pack(fill=tk.BOTH, expand=True)
 
     def get_bar_info(self):
+        """
+        Uses requests to get all available tapdrinks and cocktails from the API.
+        """
         tapdrinks = requests.get(
             f"{API_URL}bars/{self.bar['name']}/tapdrinks/", timeout=5)
         cocktails = requests.get(
@@ -435,15 +480,18 @@ class BarView(tk.CTkFrame, App):
             jsondata = json.loads(tapdrinks.text)
             self.tapdrinks = jsondata['items']
         else:
-            self.app.show_message_box("Error", "Failed to get tapdrinks info")
+            self.app.show_error(tapdrinks)
         if cocktails.status_code == 200:
             jsondata = json.loads(cocktails.text)
             self.cocktails = jsondata['items']
         else:
-            self.app.show_message_box("Error", "Failed to get cocktails info")
+            self.app.show_error(cocktails)
         self.show_bar_info()
 
     def show_bar_info(self):
+        """"
+        Displays the drinks in the bar.
+        """
         if len(self.tapdrinks) == 0 and len(self.cocktails) == 0:
             no_drinks_info = tk.CTkLabel(
                 self, text="No drinks found in this bar", font=("Roboto", 20))
@@ -457,6 +505,13 @@ class BarView(tk.CTkFrame, App):
         self.create_add_button()
 
     def create_button_frame_tapdrink(self, tapdrink, edit=False):
+        """
+        Creates a button frame with buttons for a tapdrink.
+
+        Args:
+        - tapdrink: the tapdrink to be displayed.
+        - edit: whether info fields should be editable.
+        """
         self.buttonframes[f"{tapdrink['bar_name']}_{tapdrink['drink_name']}"] = tk.CTkFrame(
             self, corner_radius=0)
         self.buttonframes[f"{tapdrink['bar_name']}_{tapdrink['drink_name']}"].pack(
@@ -471,8 +526,7 @@ class BarView(tk.CTkFrame, App):
                            pady=5, sticky="we", columnspan=2)
         drink_infobox.insert(
             tkinter.END,
-            f"{tapdrink['drink_type']}, {tapdrink['drink_name']}, \
-            {tapdrink['drink_size']} - {tapdrink['price']}€")
+            f"{tapdrink['drink_type']}, {tapdrink['drink_name']}, {tapdrink['drink_size']} - {tapdrink['price']}€")
         drink_infobox.configure(state=tk.NORMAL if edit else tk.DISABLED)
 
         button_edit = tk.CTkButton(
@@ -489,6 +543,13 @@ class BarView(tk.CTkFrame, App):
         button_delete.grid(row=0, column=3, padx=5, pady=5, sticky="we")
 
     def create_button_frame_cocktail(self, cocktail, edit=False):
+        """
+        Creates a button frame with buttons for a cocktail.
+
+        Args:
+        - cocktail: the cocktail to be displayed.
+        - edit: whether info fields should be editable.
+        """
         self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"] = \
             tk.CTkFrame(self, corner_radius=0)
         self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"].pack(
@@ -519,18 +580,36 @@ class BarView(tk.CTkFrame, App):
         button_delete.grid(row=0, column=3, padx=5, pady=5, sticky="we")
 
     def create_add_button(self):
+        """
+        Add button to add a new drink.
+        """
         self.add_button = tk.CTkButton(
             self, text="Add bar", command=self.add_item)
         self.add_button.pack(pady=5, anchor="n")
 
     def add_item(self):
+        """
+        Function for adding a new drink, not implemented yet.
+        """
         self.app.show_message_box("Error", "Not implemented yet")
 
     def edit_item(self, drink):
-        '''Edit item in database'''
+        '''
+        Opens the edit drink frame.
+
+        Args:
+        - drink: the drink to be edited.
+        '''
         self.app.show_edit_drink_frame(drink)
 
     def update_tapdrink(self, tapdrink, old_name):
+        """
+        Updates the tapdrink in the GUI.
+
+        Args:
+        - tapdrink: the tapdrink to be updated.
+        - old_name: the old name of the tapdrink.
+        """
         self.buttonframes[f"{tapdrink['bar_name']}_{old_name}"].destroy(
         )
         del self.buttonframes[f"{tapdrink['bar_name']}_{old_name}"]
@@ -539,6 +618,13 @@ class BarView(tk.CTkFrame, App):
         self.create_add_button()
 
     def update_cocktail(self, cocktail, old_name):
+        """
+        Updates the cocktail in the GUI.
+
+        Args:
+        - cocktail: the cocktail to be updated.
+        - old_name: the old name of the cocktail.
+        """
         self.buttonframes[f"{cocktail['bar_name']}_{old_name}"].destroy(
         )
         del self.buttonframes[f"{cocktail['bar_name']}_{old_name}"]
@@ -547,13 +633,25 @@ class BarView(tk.CTkFrame, App):
         self.create_add_button()
 
     def delete_item(self, drink):
-        '''Delete item from database'''
+        """
+        Forwards the delete request to the correct function.
+
+        Args:
+        - drink: the drink to be deleted.
+        """
         if "drink_type" in drink:
             self.delete_tapdrink(drink)
         else:
             self.delete_cocktail(drink)
 
     def delete_tapdrink(self, tapdrink):
+        """
+        Deletes a tapdrink from the GUI and database using
+        a DELETE request.
+
+        Args:
+        - tapdrink: the tapdrink to be deleted.
+        """
         url = tapdrink["@controls"]["self"]["href"]
         response = requests.delete(BASE_URL + url,
                                    timeout=5)
@@ -567,9 +665,16 @@ class BarView(tk.CTkFrame, App):
                     del self.buttonframes[f"{tapdrink['bar_name']}_{tapdrink['drink_name']}"]
                     break
         else:
-            print("Error")
+            self.app.show_error(response)
 
     def delete_cocktail(self, cocktail):
+        """
+        Deletes a cocktail from the GUI and database using
+        a DELETE request.
+
+        Args:
+        - cocktail: the cocktail to be deleted.
+        """
         url = cocktail["@controls"]["self"]["href"]
         response = requests.delete(BASE_URL + url,
                                    timeout=5)
@@ -583,11 +688,24 @@ class BarView(tk.CTkFrame, App):
                     del self.buttonframes[f"{cocktail['bar_name']}_{cocktail['cocktail_name']}"]
                     break
         else:
-            print("Error")
+            self.app.show_error(response)
 
 
 class EditDrinkView(tk.CTkFrame, App):
-    def __init__(self, parent, app, drink, bar_parent):
+    """
+    This class represents the frame for editing a drink.
+    """
+
+    def __init__(self, parent: tk.CTkFrame, app: App, drink: dict, bar_parent: BarView):
+        """
+        Initializes the frame.
+
+        rgs:
+        - parent: the parent (main frame) of the frame.
+        - app: the main application object.
+        - drink: the drink to be edited.
+        - bar_parent: the bar parent (bar frame) of the frame.
+        """
         super().__init__(parent)
         self.app = app
         self.drink = drink
@@ -635,10 +753,16 @@ class EditDrinkView(tk.CTkFrame, App):
         self.cancel_button.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
 
     def cancel_button_func(self):
+        """
+        Cancels the editing of a drink and returns to the bar view.
+        """
         self.app.root.latest_frames.pop()
         self.app.show_prev_frame(BarView)
 
     def submit_edited_drink(self):
+        """
+        Submits the edited drink to the database using a PUT request.
+        """
         old_name = self.drink["drink_name"]
         drink_type_entry = self.drink_type_entry.get().strip()
         if drink_type_entry == "":
@@ -691,11 +815,12 @@ class EditDrinkView(tk.CTkFrame, App):
             self.bar_parent.update_tapdrink(self.drink, old_name)
             self.app.show_prev_frame(BarView)
         else:
-            error, reason = self.app.load_error_message(response)
-            self.app.show_message_box(
-                f"Error {response.status_code}", error, reason)
+            self.app.show_error(response)
 
     def submit_edited_cocktail(self):
+        """
+        Submits the edited cocktail to the database using a PUT request.
+        """
         old_name = self.drink["cocktail_name"]
         name_entry = self.name_entry.get().strip()
         if name_entry == "":
@@ -730,13 +855,12 @@ class EditDrinkView(tk.CTkFrame, App):
             self.app.show_prev_frame(BarView)
 
         else:
-            error, reason = self.app.load_error_message(response)
-            self.app.show_message_box(
-                f"Error {response.status_code}", error, reason)
+            self.app.show_error(response)
 
 
 if __name__ == "__main__":
     rootapp = RootApp()
-    app = App(rootapp.container, rootapp)
-    app.init_frames()
+    main_app = App(rootapp.container, rootapp)
+    rootapp.top_bar.app = main_app
+    main_app.init_frames()
     rootapp.mainloop()
