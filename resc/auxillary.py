@@ -14,6 +14,7 @@ TIMEOUT = 5
 
 list_of_drinks = []
 
+
 def get_bars():
     bars = requests.get(f"{API_URL}bars/", timeout=TIMEOUT)
     if bars.status_code != 200:
@@ -25,25 +26,26 @@ def get_bars():
 
 
 def get_bar_information(jsondata):
-    if len(jsondata['items']) != 0:
+    if len(jsondata["items"]) != 0:
         print("You are in luck! There seems to be bars available! Fetching drinks")
-    for bar in jsondata['items']:
-        #print(bar)
-        fetch_bar_catalogue(bar['@controls']['self']['href'])
+    for bar in jsondata["items"]:
+        # print(bar)
+        fetch_bar_catalogue(bar["@controls"]["self"]["href"])
     sort_by_price()
+
 
 def fetch_bar_catalogue(location):
     print("fetching from: {}", location)
     catalogue_json = requests.get(f"{BASE_URL}{location}cocktails/", timeout=TIMEOUT)
     if catalogue_json.status_code == 200:
         bar_catalog = json.loads(catalogue_json.text)
-        update_to_list_of_drinks(bar_catalog['items'])
+        update_to_list_of_drinks(bar_catalog["items"])
     else:
         show_error(catalogue_json)
     catalogue_json = requests.get(f"{BASE_URL}{location}tapdrinks/", timeout=TIMEOUT)
     if catalogue_json.status_code == 200:
         bar_catalog = json.loads(catalogue_json.text)
-        update_to_list_of_drinks(bar_catalog['items'])
+        update_to_list_of_drinks(bar_catalog["items"])
     else:
         show_error(catalogue_json)
 
@@ -53,11 +55,11 @@ def update_to_list_of_drinks(bar_catalogue):
 
 
 def sort_by_price():
-    list_of_drinks.sort(key=itemgetter('price', 'bar_name'))
+    list_of_drinks.sort(key=itemgetter("price", "bar_name"))
 
 
 def show_bar_info(jsondata):
-    cocktails = jsondata['items']
+    cocktails = jsondata["items"]
     print("this is info", cocktails)
 
 
