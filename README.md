@@ -37,6 +37,12 @@ The project requirements are as follows
 ### Client requirements:
 
 The client requirements are as follows
+
+| Module        	| Version 	|
+|---------------	|---------	|
+| customtkinter 	| 5.0.3   	|
+| requests      	| 2.28.1  	|
+
     5. to run the client, please
 ```cd client```
 
