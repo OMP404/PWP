@@ -7,6 +7,18 @@
 
 __Remember to include all required documentation and HOWTOs, including how to create and populate the database, how to run and test the API, the url to the entrypoint and instructions on how to setup and run the client__
 
+# Running the project
+The project requirements are as follows
+| Module          	| Version 	|
+|-----------------	|---------	|
+| Flask           	| 2.1.3   	|
+| flask_restful   	| 0.3.9   	|
+| flask_sqalchemy 	| 2.5.1   	|
+| flasgger        	| 0.9.5   	|
+| jsonschema      	| 4.17.3  	|
+| SQLAlchemy      	| 1.4.39  	|
+| Werkzeug        	| 2.2.3   	|
+|                 	|         	|
 
 ## Initial steps
     1. clone project
