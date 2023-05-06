@@ -8,6 +8,10 @@
 __Remember to include all required documentation and HOWTOs, including how to create and populate the database, how to run and test the API, the url to the entrypoint and instructions on how to setup and run the client__
 
 # Running the project
+
+Project is developed, ran and tested on python versions 3.9 and above. Please consider using it or newer.
+Usage of pyenv & venv is suggested, albeit not mandatory.
+
 The project requirements are as follows
 | Module          	| Version 	|
 |-----------------	|---------	|
