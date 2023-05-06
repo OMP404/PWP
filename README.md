@@ -31,3 +31,21 @@ The project requirements are as follows
 ```flask run```
     
     after the starup-process the development server can be found at http://127.0.0.1:5000/
+
+## Starting
+
+### Client requirements:
+
+The client requirements are as follows
+    5. to run the client, please
+```cd client```
+
+```bash python3 main.py```
+
+    After the startup, you can reach API at ```localhost:5000``` 
+## Running tests
+
+## Misc. & documentation
+
+    By default, the documentation of projectwork can be found at
+```localhost:5000/apidocs/```
