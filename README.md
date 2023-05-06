@@ -1,6 +1,9 @@
 # PWP SPRING 2023
+
 # PROJECT NAME
+
 # Group information
+
 * Student 1. Saku Antikainen santikai19@student.oulu.fi
 * Student 2. Olli Paananen opaanane19@student.oulu.fi
 * Student 3. Joose Yrjänäinen jyrjanai18@student.oulu.fi
@@ -13,49 +16,100 @@ Project is developed, ran and tested on python versions 3.9 and above. Please co
 Usage of pyenv & venv is suggested, albeit not mandatory.
 
 The project requirements are as follows
-| Module          	| Version 	|
-|-----------------	|---------	|
-| Flask           	| 2.1.3   	|
-| flask_restful   	| 0.3.9   	|
-| flask_sqalchemy 	| 2.5.1   	|
-| flasgger        	| 0.9.5   	|
-| jsonschema      	| 4.17.3  	|
-| SQLAlchemy      	| 1.4.39  	|
-| Werkzeug        	| 2.2.3   	|
-|                 	|         	|
+| Module           | Version  |
+|----------------- |--------- |
+| Flask            | 2.1.3    |
+| flask_restful    | 0.3.9    |
+| flask_sqalchemy  | 2.5.1    |
+| flasgger         | 0.9.5    |
+| jsonschema       | 4.17.3   |
+| SQLAlchemy       | 1.4.39   |
+| Werkzeug         | 2.2.3    |
+|                  |          |
 
 ## Initial steps
+
     1. clone project
     2. navigate to the project directory
+
 ## Install and dependencies
+
     3. Required dependencies for this project are in the requirements.txt -file, you can install them by running:
 ```pip install -r requirements.txt```
-    
+
     4. running the flask project
 ```flask run```
-    
+
     after the starup-process the development server can be found at http://127.0.0.1:5000/
 
 ## Starting
 
-### Client requirements:
+### Client requirements
 
 The client requirements are as follows
 
-| Module        	| Version 	|
-|---------------	|---------	|
-| customtkinter 	| 5.0.3   	|
-| requests      	| 2.28.1  	|
+| Module         | Version  |
+|--------------- |--------- |
+| customtkinter  | 5.0.3    |
+| requests       | 2.28.1   |
 
     5. to run the client, please
 ```cd client```
 
 ```bash python3 main.py```
 
-    After the startup, you can reach API at ```localhost:5000``` 
+    After the startup, you can reach API at default location if you did not specify ip ```localhost:5000/[*]``` 
+
 ## Running tests
 
 ## Misc. & documentation
 
-    By default, the documentation of projectwork can be found at
+### Schemas example
+
+Bar
+
+```xml
+
+{
+    address*    string
+                Bar's address
+    name*       string
+                Bar's unique name
+}
+
+```
+
+Cocktail
+
+```xml
+{
+bar_name*       string
+                The name of the bar
+cocktail_name*  string
+                The name of the cocktails
+price*          number
+                minimum: 0
+                The price of the cocktail
+}
+```
+
+Tapdrink
+
+```xml
+{
+bar_name*       string
+                The name of the bar
+drink_name*     string
+                The name of the drink (Karhu, Koff etc.)
+drink_size*     number
+                minimum: 0 
+                The size of the drink in liters
+price*          number
+                minimum: 0
+                The price of the drink in euros
+}
+```
+
+    By default, the documentation of projectwork and more information can be found at
+
 ```localhost:5000/apidocs/```
