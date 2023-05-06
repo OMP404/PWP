@@ -1,0 +1,5 @@
+Flask==2.2.2
+Flask_Caching==2.0.2
+Flask_RESTful==0.3.9
+Requests==2.30.0
+Werkzeug==2.2.2
