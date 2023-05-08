@@ -97,7 +97,7 @@ class App():
         """
         Initializes the frames of the application.
         """
-        frames = [MainView, BarsListView, AddBarView]
+        frames = [MainView, AddBarView]
         for frame in frames:
             self.frames[frame] = frame(self.container, self)
         self.show_frame(MainView)
@@ -122,6 +122,10 @@ class App():
         self.frames[EditDrinkView] = EditDrinkView(
             self.container, self, drink, self.frames[BarView])
         self.show_frame(EditDrinkView)
+
+    def show_barlist_frame(self):
+        self.frames[BarsListView] = BarsListView(self.container, self)
+        self.show_frame(BarsListView)
 
     def show_frame(self, frame):
         """
@@ -272,7 +276,7 @@ class MainView(tk.CTkFrame, App):
         """
         Changes the frame to the BarsListView.
         """
-        self.app.show_frame(BarsListView)
+        self.app.show_barlist_frame()
 
     def add_bar(self):
         """
