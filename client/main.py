@@ -7,6 +7,7 @@ import tkinter
 
 import customtkinter as tk
 import requests
+from requests.exceptions import ConnectionError
 
 BASE_URL = "http://localhost:5000"
 API_URL = f"{BASE_URL}/api/"
@@ -326,15 +327,20 @@ class AddBarView(tk.CTkFrame, App):
         address = self.address_entry.get().strip()
         if name and address:
             data = {"name": name, "address": address}
-            response = requests.post(
-                f"{API_URL}bars/", json=data, headers=HEADERS, timeout=5)
-            if response.status_code == 201:
-                self.app.show_message_box("Success", "Bar added")
-                self.name_entry.delete(0, tkinter.END)
-                self.address_entry.delete(0, tkinter.END)
-                self.app.show_frame(MainView)
+            try:
+                response = requests.post(
+                    f"{API_URL}bars/", json=data, headers=HEADERS, timeout=5)
+            except ConnectionError:
+                self.app.show_message_box(
+                    "Error", "Could not connect to the server")
             else:
-                self.app.show_error(response)
+                if response.status_code == 201:
+                    self.app.show_message_box("Success", "Bar added")
+                    self.name_entry.delete(0, tkinter.END)
+                    self.address_entry.delete(0, tkinter.END)
+                    self.app.show_frame(MainView)
+                else:
+                    self.app.show_error(response)
         else:
             self.app.show_message_box(
                 "Error", "Name and address must be filled")
@@ -373,46 +379,56 @@ class BarsListView(tk.CTkFrame, App):
         """
         Uses requests to get all available bars from the API.
         """
-        response = requests.get(f"{API_URL}bars/", timeout=5)
-        if response.status_code == 200:
-            self.bars = response.json()['items']
+        try:
+            response = requests.get(f"{API_URL}bars/", timeout=5)
+        except ConnectionError:
+            self.app.show_message_box(
+                "Error", "Could not connect to the server")
         else:
-            self.app.show_error(response)
+            if response.status_code == 200:
+                self.bars = response.json()['items']
+            else:
+                self.app.show_error(response)
 
     def create_buttons(self):
         """
         Creates buttons for each bar (edit, delete, view)
         """
         buttons = {}
-        for bar in self.bars:
-            self.containers[f"{bar['name']}_container"] = tk.CTkFrame(
-                self, corner_radius=0)
-            self.containers[f"{bar['name']}_container"].pack(
-                fill=tk.X, pady=1, padx=0)
-            self.containers[f"{bar['name']}_container"].grid_columnconfigure(
-                0, weight=1)
-            self.containers[f"{bar['name']}_container"].grid_columnconfigure(
-                (2, 3, 4), weight=0)
-            bar_info = f"{bar['name']}, {bar['address']}"
-            bar_info_box = tk.CTkLabel(
-                self.containers[f"{bar['name']}_container"], text=bar_info)
-            bar_info_box.grid(row=0, column=0, padx=5,
-                              pady=5, sticky="we", columnspan=2)
-            buttons[f"{bar['name']}_button"] = tk.CTkButton(
-                self.containers[f"{bar['name']}_container"],
-                text="Show bar", command=lambda bar=bar: self.app.show_bar(bar))
-            buttons[f"{bar['name']}_button"].grid(
-                row=0, column=2, padx=5, pady=5, sticky="we")
-            buttons[f"{bar['name']}_edit_button"] = tk.CTkButton(
-                self.containers[f"{bar['name']}_container"],
-                text="Edit bar", command=lambda bar=bar: self.edit_bar(bar))
-            buttons[f"{bar['name']}_edit_button"].grid(
-                row=0, column=3, padx=5, pady=5, sticky="we")
-            buttons[f"{bar['name']}_delete_button"] = tk.CTkButton(
-                self.containers[f"{bar['name']}_container"],
-                text="Delete bar", command=lambda bar=bar: self.delete_bar(bar))
-            buttons[f"{bar['name']}_delete_button"].grid(
-                row=0, column=4, padx=5, pady=5, sticky="we")
+        if self.bars:
+            for bar in self.bars:
+                self.containers[f"{bar['name']}_container"] = tk.CTkFrame(
+                    self, corner_radius=0)
+                self.containers[f"{bar['name']}_container"].pack(
+                    fill=tk.X, pady=1, padx=0)
+                self.containers[f"{bar['name']}_container"].grid_columnconfigure(
+                    0, weight=1)
+                self.containers[f"{bar['name']}_container"].grid_columnconfigure(
+                    (2, 3, 4), weight=0)
+                bar_info = f"{bar['name']}, {bar['address']}"
+                bar_info_box = tk.CTkLabel(
+                    self.containers[f"{bar['name']}_container"], text=bar_info)
+                bar_info_box.grid(row=0, column=0, padx=5,
+                                  pady=5, sticky="we", columnspan=2)
+                buttons[f"{bar['name']}_button"] = tk.CTkButton(
+                    self.containers[f"{bar['name']}_container"],
+                    text="Show bar", command=lambda bar=bar: self.app.show_bar(bar))
+                buttons[f"{bar['name']}_button"].grid(
+                    row=0, column=2, padx=5, pady=5, sticky="we")
+                buttons[f"{bar['name']}_edit_button"] = tk.CTkButton(
+                    self.containers[f"{bar['name']}_container"],
+                    text="Edit bar", command=lambda bar=bar: self.edit_bar(bar))
+                buttons[f"{bar['name']}_edit_button"].grid(
+                    row=0, column=3, padx=5, pady=5, sticky="we")
+                buttons[f"{bar['name']}_delete_button"] = tk.CTkButton(
+                    self.containers[f"{bar['name']}_container"],
+                    text="Delete bar", command=lambda bar=bar: self.delete_bar(bar))
+                buttons[f"{bar['name']}_delete_button"].grid(
+                    row=0, column=4, padx=5, pady=5, sticky="we")
+        else:
+            self.containers[f"no_bars_title"] = tk.CTkLabel(
+                self, text="No bars available")
+            self.containers[f"no_bars_title"].pack(fill=tk.X, pady=5, padx=5)
 
     def edit_bar(self, _):
         """
@@ -584,7 +600,7 @@ class BarView(tk.CTkFrame, App):
         Add button to add a new drink.
         """
         self.add_button = tk.CTkButton(
-            self, text="Add bar", command=self.add_item)
+            self, text="Add drink", command=self.add_item)
         self.add_button.pack(pady=5, anchor="n")
 
     def add_item(self):
